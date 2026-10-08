@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+</head>
+<body>
+<title>Gaby · Advanced Interface</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600&family=Fragment+Mono&display=swap">
+<style>
+/* Layout: a studio index. Weeks stack as chapters; each set is a card whose cover is a capture of the prototype itself. A card opens the submitted prototype; a second link opens its Figma frame. */
+:root {
+  --bg: #f5f5f3; --surface: #ffffff; --fg: #17181b; --soft: #6c6e74; --line: #e3e3df; --accent: #2f55ff;
+  --ui: "Onest", "Helvetica Neue", Arial, sans-serif; --mono: "Fragment Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #111214; --surface: #191a1d; --fg: #ededee; --soft: #9a9ca3; --line: #2a2b30; --accent: #7d95ff; color-scheme: dark; } }
+:root[data-theme="dark"] { --bg: #111214; --surface: #191a1d; --fg: #ededee; --soft: #9a9ca3; --line: #2a2b30; --accent: #7d95ff; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 400 15px/1.55 var(--ui); -webkit-font-smoothing: antialiased; }
+a { color: inherit; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-inline: max(16px, 4vw); padding-block: 48px 96px; display: grid; gap: 64px; }
+
+.intro { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 24px 48px; align-items: end; }
+.eyebrow { font: 400 12px/1.4 var(--mono); color: var(--soft); letter-spacing: .04em; margin: 0 0 18px; }
+h1 { font: 500 clamp(44px, 7vw, 84px)/.95 var(--ui); letter-spacing: -.045em; margin: 0; text-wrap: balance; }
+.intro p { margin: 0; color: var(--soft); max-width: 46ch; }
+.weeknav { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px; }
+.weeknav a { font: 500 13px var(--ui); text-decoration: none; border: 1px solid var(--line); background: var(--surface); padding: 7px 13px; border-radius: 999px; }
+.weeknav a:hover { border-color: var(--fg); }
+
+.weeks { display: grid; gap: 72px; }
+.week { display: grid; gap: 22px; scroll-margin-top: 24px; }
+.whead { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 8px 24px; align-items: baseline; border-top: 1px solid var(--fg); padding-top: 16px; }
+.wnum { font: 400 13px var(--mono); color: var(--soft); }
+.whead h2 { font: 500 30px/1.1 var(--ui); letter-spacing: -.025em; margin: 0; }
+.whead .brief { grid-column: 2; margin: 0; color: var(--soft); font-size: 14px; max-width: 64ch; }
+.whead > a { font: 400 12px var(--mono); color: var(--accent); text-decoration: none; white-space: nowrap; }
+.whead > a:hover { text-decoration: underline; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 28px 18px; }
+.set { display: grid; gap: 10px; align-content: start; min-width: 0; }
+.cover { display: block; position: relative; aspect-ratio: 4 / 3; max-width: 100%; border-radius: 14px; overflow: hidden; border: 1px solid var(--line); background: var(--surface); }
+.cover img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .5s cubic-bezier(.2,.8,.2,1); }
+.cover:hover img { transform: scale(1.035); }
+.cover .go { position: absolute; right: 10px; bottom: 10px; font: 500 12px var(--ui); background: var(--surface); color: var(--fg); border-radius: 999px; padding: 6px 11px; opacity: 0; transform: translateY(4px); transition: .25s; box-shadow: 0 4px 14px rgba(0,0,0,.18); }
+.cover:hover .go, .cover:focus-visible .go { opacity: 1; transform: none; }
+.cover:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.meta { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+.meta b { font: 500 16px/1.3 var(--ui); }
+.meta span { font: 400 12px var(--mono); color: var(--soft); text-align: right; }
+.note { margin: -4px 0 0; font-size: 13.5px; color: var(--soft); }
+.links { display: flex; gap: 6px; flex-wrap: wrap; }
+.links a { font: 400 11.5px var(--mono); text-decoration: none; color: var(--soft); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 3px 9px; }
+.links a:hover { color: var(--fg); border-color: var(--fg); }
+.links a:focus-visible, .weeknav a:focus-visible, .whead > a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (max-width: 720px) { .intro { grid-template-columns: 1fr; } .whead { grid-template-columns: 1fr; } .whead .brief { grid-column: 1; } }
+@media (prefers-reduced-motion: reduce) { .cover img, .cover .go { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header class="intro">
+    <div>
+      <p class="eyebrow">ArtCenter · Form and Content · FA2026 · Dan Park</p>
+      <h1>Advanced Interface</h1>
+    </div>
+    <div>
+      <p>Gaby Feng's weekly UI component studies. Each week is one component type, drawn in Figma and built as a working prototype, in several tones.</p>
+      <nav class="weeknav" id="weeknav" aria-label="Weeks"></nav>
+    </div>
+  </header>
+  <div class="weeks" id="weeks"></div>
+</div>
+
+<script>
+/* To add a week: put a new entry at the top of WEEKS and publish its covers under covers/. */
+const FIG = 'https://www.figma.com/design/i4NyKNmLDgHOhEJ0ypeuO6/week1-Progress-Bar?node-id=';
+const ART = 'https://claude.ai/artifact/';
+const GH = 'https://jinghan406.github.io/';
+const WEEKS = [
+  { id: 'w3', n: 'Week 3', title: 'Selectors', page: '224-2',
+    brief: 'Four sets of a switch, a checkbox and a radio button, each in a list with labels, off → on and back, with full spec.',
+    sets: [
+      { name: 'Lava', tone: 'Minimal', cover: 'w3-lava', url: GH + 'week3-selectors-minimal/', fig: '224-3', note: 'Liquid metaballs pour, drop and drift between states.' },
+      { name: 'Precision', tone: 'Futuristic', cover: 'w3-precision', url: GH + 'week3-selectors-futuristic/', fig: '238-2', note: 'Graphite and one band of light; every control morphs.' },
+      { name: 'Ink line', tone: 'Intimate', cover: 'w3-ink', url: GH + 'week3-selectors-intimate/', fig: '239-2', note: 'Pen-drawn controls that ink on and erase backward.' },
+      { name: 'Rally', tone: 'Energetic', cover: 'w3-rally', url: GH + 'week3-selectors-energetic/', fig: '229-2', note: 'Sports poster: slam switch, stamp check, bouncing ball.' }
+    ] },
+  { id: 'w2', n: 'Week 2', title: 'Badges & Tooltips', page: '95-2',
+    brief: 'Five sets of a badge and a tooltip. Badge: dot and with content, in and out. Tooltip: plain and rich with an action.',
+    sets: [
+      { name: 'Bud & Drip', tone: 'Minimal', cover: 'w2-bud-drip', url: GH + 'week2-badges-minimal/', fig: '95-3', note: 'A badge buds off the icon; a tooltip drips into place.',
+        extra: [['Light version', 'week2/bud-drip-light.html'], ['Colour version', 'week2/bud-drip-colour.html']] },
+      { name: 'Emote & Chat', tone: 'Playful', cover: 'w2-emote-chat', url: GH + 'week2-badges-playful/', fig: '121-2', note: 'Pixel farm: emote bubbles and a dialogue box.' },
+      { name: 'Lock-on & Callout', tone: 'Futuristic', cover: 'w2-lock-on', url: GH + 'week2-badges-futuristic/', fig: '146-2', note: 'Starship HUD with brackets that lock on.' },
+      { name: 'Circled & Noted', tone: 'Intimate', cover: 'w2-circled-noted', url: GH + 'week2-badges-intimate/', fig: '154-2', note: 'A notebook: red-pen circles and sticky notes.' },
+      { name: 'Seal & Card', tone: 'Luxurious', cover: 'w2-seal-card', url: GH + 'week2-badges-luxurious/', fig: '173-2', note: 'Hotel concierge: gold coins and a wax-sealed card.' }
+    ] },
+  { id: 'w1', n: 'Week 1', title: 'Progress Indicators', page: '0-1',
+    brief: 'Three sets of an indeterminate and a determinate indicator, through zero, progress and complete.',
+    sets: [
+      { name: 'Cluster & Mass', tone: 'Minimal', cover: 'w1-cluster', url: GH + 'week1-loaders-minimal/', fig: '2-68', note: 'Soft bodies merge and part, then set the word DESIGN.' },
+      { name: 'Lens & Column', tone: 'Elegant', cover: 'w1-lens', url: GH + 'week1-loaders-elegant/', fig: '2-2', note: 'Rendered optical glass: a lens and a vial of water.' },
+      { name: 'Uplink & Core', tone: 'Cyberpunk', cover: 'w1-uplink', url: GH + 'week1-loaders-cyberpunk/', fig: '2-35', note: 'A neon HUD: a charge runs the track, a ring fills.' }
+    ] }
+];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const ext = 'target="_blank" rel="noopener"';
+const nav = document.getElementById('weeknav'), root = document.getElementById('weeks');
+WEEKS.forEach(w => {
+  nav.insertAdjacentHTML('beforeend', `<a href="#${w.id}">${w.n} · ${esc(w.title)}</a>`);
+  root.insertAdjacentHTML('beforeend', `<section class="week" id="${w.id}" aria-labelledby="h-${w.id}">
+    <div class="whead"><span class="wnum">${w.n}</span><h2 id="h-${w.id}">${esc(w.title)}</h2>
+      <a href="${FIG + w.page}" ${ext}>Figma page ↗</a><p class="brief">${esc(w.brief)}</p></div>
+    <div class="grid">${w.sets.map(s => `<article class="set">
+      <a class="cover" href="${s.url}" ${ext} aria-label="Open ${esc(s.name)} prototype"><img src="covers/${s.cover}.jpg" alt="${esc(s.name)} prototype" loading="lazy"><span class="go">Open prototype ↗</span></a>
+      <div class="meta"><b>${esc(s.name)}</b><span>${esc(s.tone)}</span></div>
+      <p class="note">${esc(s.note)}</p>
+      <div class="links"><a href="${s.url}" ${ext}>Prototype ↗</a><a href="${FIG + s.fig}" ${ext}>Figma ↗</a>${(s.extra || []).map(([t, u]) => `<a href="${u}" ${ext}>${t} ↗</a>`).join('')}</div>
+    </article>`).join('')}</div></section>`);
+});
+</script>
+
+</body>
+</html>
