@@ -57,6 +57,24 @@ h1 { font: 500 clamp(44px, 7vw, 84px)/.95 var(--ui); letter-spacing: -.045em; ma
 .links a:focus-visible, .weeknav a:focus-visible, .whead > a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 @media (max-width: 720px) { .intro { grid-template-columns: 1fr; } .whead { grid-template-columns: 1fr; } .whead .brief { grid-column: 1; } }
 @media (prefers-reduced-motion: reduce) { .cover img, .cover .go { transition: none; } }
+
+/* in-page viewer */
+[hidden] { display: none !important; }
+button.cover { padding: 0; cursor: pointer; width: 100%; font: inherit; color: inherit; }
+.links button { font: 400 11.5px var(--mono); color: var(--soft); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 3px 9px; cursor: pointer; }
+.links button:hover { color: var(--fg); border-color: var(--fg); }
+.viewer { position: fixed; inset: 0; z-index: 20; background: var(--bg); display: grid; grid-template-rows: auto 1fr; padding-top: env(safe-area-inset-top, 0px); }
+.vbar { display: flex; align-items: center; gap: 10px; padding: 10px max(16px, 2vw); border-bottom: 1px solid var(--line); background: var(--surface); min-width: 0; }
+.vbar button, .vbar a { font: 500 13px var(--ui); color: var(--fg); background: none; border: 1px solid var(--line); border-radius: 999px; padding: 7px 12px; cursor: pointer; text-decoration: none; white-space: nowrap; }
+.vbar button:hover, .vbar a:hover { border-color: var(--fg); }
+.vbar button[aria-pressed="true"] { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.vbar :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.vtitle { flex: 1; min-width: 0; display: flex; gap: 10px; align-items: baseline; overflow: hidden; }
+.vtitle b { font: 500 15px var(--ui); white-space: nowrap; }
+.vtitle span { font: 400 12px var(--mono); color: var(--soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.vvars { display: flex; gap: 6px; }
+.viewer iframe { width: 100%; height: 100%; border: 0; display: block; background: var(--surface); }
+@media (max-width: 720px) { .vtitle span, .vbar .wide { display: none; } }
 </style>
 
 <div class="wrap">
@@ -73,53 +91,91 @@ h1 { font: 500 clamp(44px, 7vw, 84px)/.95 var(--ui); letter-spacing: -.045em; ma
   <div class="weeks" id="weeks"></div>
 </div>
 
+<div class="viewer" id="viewer" hidden role="dialog" aria-modal="true" aria-labelledby="v-name">
+  <div class="vbar">
+    <button type="button" id="v-back">← All work</button>
+    <div class="vtitle"><b id="v-name"></b><span id="v-meta"></span></div>
+    <div class="vvars" id="v-vars"></div>
+    <a id="v-fig" class="wide" href="#" target="_blank" rel="noopener">Figma ↗</a>
+    <button type="button" id="v-prev" aria-label="Previous set">←</button>
+    <button type="button" id="v-next" aria-label="Next set">→</button>
+  </div>
+  <iframe id="v-frame" title="Prototype"></iframe>
+</div>
+
+
 <script>
-/* To add a week: put a new entry at the top of WEEKS and publish its covers under covers/. */
+/* To add a week: put a new entry at the top of WEEKS, its pages under p/ and its covers under covers/. */
 const FIG = 'https://www.figma.com/design/i4NyKNmLDgHOhEJ0ypeuO6/week1-Progress-Bar?node-id=';
-const ART = 'https://claude.ai/artifact/';
-const GH = 'https://jinghan406.github.io/';
 const WEEKS = [
   { id: 'w3', n: 'Week 3', title: 'Selectors', page: '224-2',
     brief: 'Four sets of a switch, a checkbox and a radio button, each in a list with labels, off → on and back, with full spec.',
     sets: [
-      { name: 'Lava', tone: 'Minimal', cover: 'w3-lava', url: GH + 'week3-selectors-minimal/', fig: '224-3', note: 'Liquid metaballs pour, drop and drift between states.' },
-      { name: 'Precision', tone: 'Futuristic', cover: 'w3-precision', url: GH + 'week3-selectors-futuristic/', fig: '238-2', note: 'Graphite and one band of light; every control morphs.' },
-      { name: 'Ink line', tone: 'Intimate', cover: 'w3-ink', url: GH + 'week3-selectors-intimate/', fig: '239-2', note: 'Pen-drawn controls that ink on and erase backward.' },
-      { name: 'Rally', tone: 'Energetic', cover: 'w3-rally', url: GH + 'week3-selectors-energetic/', fig: '229-2', note: 'Sports poster: slam switch, stamp check, bouncing ball.' }
+      { id: 'w3-lava', name: 'Lava', tone: 'Minimal', fig: '224-3', note: 'Liquid metaballs pour, drop and drift between states.' },
+      { id: 'w3-precision', name: 'Precision', tone: 'Futuristic', fig: '238-2', note: 'Graphite and one band of light; every control morphs.' },
+      { id: 'w3-ink', name: 'Ink line', tone: 'Intimate', fig: '239-2', note: 'Pen-drawn controls that ink on and erase backward.' },
+      { id: 'w3-rally', name: 'Rally', tone: 'Energetic', fig: '229-2', note: 'Sports poster: slam switch, stamp check, bouncing ball.' }
     ] },
   { id: 'w2', n: 'Week 2', title: 'Badges & Tooltips', page: '95-2',
     brief: 'Five sets of a badge and a tooltip. Badge: dot and with content, in and out. Tooltip: plain and rich with an action.',
     sets: [
-      { name: 'Bud & Drip', tone: 'Minimal', cover: 'w2-bud-drip', url: GH + 'week2-badges-minimal/', fig: '95-3', note: 'A badge buds off the icon; a tooltip drips into place.',
-        extra: [['Light version', 'week2/bud-drip-light.html'], ['Colour version', 'week2/bud-drip-colour.html']] },
-      { name: 'Emote & Chat', tone: 'Playful', cover: 'w2-emote-chat', url: GH + 'week2-badges-playful/', fig: '121-2', note: 'Pixel farm: emote bubbles and a dialogue box.' },
-      { name: 'Lock-on & Callout', tone: 'Futuristic', cover: 'w2-lock-on', url: GH + 'week2-badges-futuristic/', fig: '146-2', note: 'Starship HUD with brackets that lock on.' },
-      { name: 'Circled & Noted', tone: 'Intimate', cover: 'w2-circled-noted', url: GH + 'week2-badges-intimate/', fig: '154-2', note: 'A notebook: red-pen circles and sticky notes.' },
-      { name: 'Seal & Card', tone: 'Luxurious', cover: 'w2-seal-card', url: GH + 'week2-badges-luxurious/', fig: '173-2', note: 'Hotel concierge: gold coins and a wax-sealed card.' }
+      { id: 'w2-bud-drip', name: 'Bud & Drip', tone: 'Minimal', fig: '95-3', note: 'A badge buds off the icon; a tooltip drips into place.',
+        vars: [['Dark', 'w2-bud-drip'], ['Light', 'w2-bud-drip-light'], ['Colour', 'w2-bud-drip-colour']] },
+      { id: 'w2-emote-chat', name: 'Emote & Chat', tone: 'Playful', fig: '121-2', note: 'Pixel farm: emote bubbles and a dialogue box.' },
+      { id: 'w2-lock-on', name: 'Lock-on & Callout', tone: 'Futuristic', fig: '146-2', note: 'Starship HUD with brackets that lock on.' },
+      { id: 'w2-circled-noted', name: 'Circled & Noted', tone: 'Intimate', fig: '154-2', note: 'A notebook: red-pen circles and sticky notes.' },
+      { id: 'w2-seal-card', name: 'Seal & Card', tone: 'Luxurious', fig: '173-2', note: 'Hotel concierge: gold coins and a wax-sealed card.' }
     ] },
   { id: 'w1', n: 'Week 1', title: 'Progress Indicators', page: '0-1',
     brief: 'Three sets of an indeterminate and a determinate indicator, through zero, progress and complete.',
     sets: [
-      { name: 'Cluster & Mass', tone: 'Minimal', cover: 'w1-cluster', url: GH + 'week1-loaders-minimal/', fig: '2-68', note: 'Soft bodies merge and part, then set the word DESIGN.' },
-      { name: 'Lens & Column', tone: 'Elegant', cover: 'w1-lens', url: GH + 'week1-loaders-elegant/', fig: '2-2', note: 'Rendered optical glass: a lens and a vial of water.' },
-      { name: 'Uplink & Core', tone: 'Cyberpunk', cover: 'w1-uplink', url: GH + 'week1-loaders-cyberpunk/', fig: '2-35', note: 'A neon HUD: a charge runs the track, a ring fills.' }
+      { id: 'w1-cluster', name: 'Cluster & Mass', tone: 'Minimal', fig: '2-68', note: 'Soft bodies merge and part, then set the word DESIGN.' },
+      { id: 'w1-lens', name: 'Lens & Column', tone: 'Elegant', fig: '2-2', note: 'Rendered optical glass: a lens and a vial of water.' },
+      { id: 'w1-uplink', name: 'Uplink & Core', tone: 'Cyberpunk', fig: '2-35', note: 'A neon HUD: a charge runs the track, a ring fills.' }
     ] }
 ];
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const ext = 'target="_blank" rel="noopener"';
-const nav = document.getElementById('weeknav'), root = document.getElementById('weeks');
+const $ = id => document.getElementById(id);
+const ALL = [];
 WEEKS.forEach(w => {
-  nav.insertAdjacentHTML('beforeend', `<a href="#${w.id}">${w.n} · ${esc(w.title)}</a>`);
-  root.insertAdjacentHTML('beforeend', `<section class="week" id="${w.id}" aria-labelledby="h-${w.id}">
+  w.sets.forEach(s => ALL.push({ ...s, week: w }));
+  $('weeknav').insertAdjacentHTML('beforeend', `<a href="#${w.id}">${w.n} · ${esc(w.title)}</a>`);
+  $('weeks').insertAdjacentHTML('beforeend', `<section class="week" id="${w.id}" aria-labelledby="h-${w.id}">
     <div class="whead"><span class="wnum">${w.n}</span><h2 id="h-${w.id}">${esc(w.title)}</h2>
       <a href="${FIG + w.page}" ${ext}>Figma page ↗</a><p class="brief">${esc(w.brief)}</p></div>
     <div class="grid">${w.sets.map(s => `<article class="set">
-      <a class="cover" href="${s.url}" ${ext} aria-label="Open ${esc(s.name)} prototype"><img src="covers/${s.cover}.jpg" alt="${esc(s.name)} prototype" loading="lazy"><span class="go">Open prototype ↗</span></a>
+      <button type="button" class="cover" data-open="${s.id}" aria-label="View ${esc(s.name)}"><img src="covers/${s.id}.jpg" alt="" loading="lazy"><span class="go">View prototype</span></button>
       <div class="meta"><b>${esc(s.name)}</b><span>${esc(s.tone)}</span></div>
       <p class="note">${esc(s.note)}</p>
-      <div class="links"><a href="${s.url}" ${ext}>Prototype ↗</a><a href="${FIG + s.fig}" ${ext}>Figma ↗</a>${(s.extra || []).map(([t, u]) => `<a href="${u}" ${ext}>${t} ↗</a>`).join('')}</div>
+      <div class="links"><button type="button" data-open="${s.id}">Prototype</button><a href="${FIG + s.fig}" ${ext}>Figma ↗</a>${(s.vars || []).slice(1).map(([t, f]) => `<button type="button" data-open="${s.id}" data-file="${f}">${t} version</button>`).join('')}</div>
     </article>`).join('')}</div></section>`);
 });
+
+let cur = -1, opener = null;
+function show(i, file, push = true) {
+  cur = (i + ALL.length) % ALL.length; const s = ALL[cur]; file = file || s.id;
+  $('v-name').textContent = s.name; $('v-meta').textContent = `${s.week.n} · ${s.week.title} · ${s.tone}`;
+  $('v-fig').href = FIG + s.fig;
+  $('v-vars').innerHTML = (s.vars || []).map(([t, f]) => `<button type="button" data-var="${f}" aria-pressed="${f === file}">${t}</button>`).join('');
+  const src = `p/${file}.html`; if ($('v-frame').getAttribute('src') !== src) $('v-frame').src = src;
+  if ($('viewer').hidden) { opener = document.activeElement; $('viewer').hidden = false; document.body.style.overflow = 'hidden'; $('v-back').focus(); }
+  if (push) { try { history.replaceState(null, '', '#' + file); } catch (e) {} }
+}
+function close() {
+  $('viewer').hidden = true; document.body.style.overflow = ''; $('v-frame').removeAttribute('src');
+  const id = ALL[cur]?.id; cur = -1;
+  try { history.replaceState(null, '', location.pathname + '#' + id.slice(0, 2)); } catch (e) {}
+  (document.querySelector(`.cover[data-open="${id}"]`) || opener)?.focus?.();
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-open]'); if (b) { show(ALL.findIndex(s => s.id === b.dataset.open), b.dataset.file); return; }
+  const v = e.target.closest('[data-var]'); if (v) show(cur, v.dataset.var);
+});
+$('v-back').onclick = close; $('v-prev').onclick = () => show(cur - 1); $('v-next').onclick = () => show(cur + 1);
+addEventListener('keydown', e => { if ($('viewer').hidden) return; if (e.key === 'Escape') close(); });
+const h = location.hash.slice(1);
+if (h) { const i = ALL.findIndex(s => s.id === h || (s.vars || []).some(v => v[1] === h)); if (i >= 0) show(i, h, false); }
 </script>
 
 </body>
