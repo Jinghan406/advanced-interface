@@ -1,0 +1,516 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Cluster and Mass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400;500&family=Poppins:wght@700&display=swap">
+<style>
+:root{
+  --black:#050505; --line:#1A1A1A; --dot:#1E1E1E;
+  --white:#E8E8E8; --pure:#FFFFFF; --g1:#9A9A9A; --g2:#5E5E5E; --g3:#343434;
+  --ui:Inter, -apple-system, system-ui, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
+  --type:Poppins, "Arial Black", Inter, system-ui, sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0; color:var(--white); font:400 15px/1.6 var(--ui);
+  background:
+    radial-gradient(circle at 1px 1px, var(--dot) 1px, transparent 0) 0 0/22px 22px,
+    var(--black);
+  padding-inline:clamp(16px,5vw,60px); padding-block:60px 72px; -webkit-font-smoothing:antialiased}
+.wrap{max-width:1020px; margin:0 auto; display:grid; gap:36px}
+
+header.top{display:grid; gap:12px; max-width:60ch}
+.eyebrow{font:500 11px/1 var(--mono); letter-spacing:.16em; color:var(--g2)}
+h1{margin:0; font-weight:300; font-size:clamp(34px,5.2vw,52px); line-height:1.05; letter-spacing:-.03em}
+.lede{margin:0; color:var(--g1); font-weight:300; max-width:54ch}
+.keys{display:flex; flex-wrap:wrap; gap:6px 18px; font:400 12px/1.5 var(--mono); color:var(--g2)}
+.keys b{font-weight:500; color:var(--white)}
+
+.pair{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr)); gap:1px; background:var(--line)}
+.card{background:var(--black); display:grid; align-content:start}
+.head{display:flex; align-items:baseline; justify-content:space-between; gap:12px; padding:20px 22px 12px}
+.head h2{margin:0; font-weight:400; font-size:18px; letter-spacing:-.01em}
+.head .kind{font:500 10px/1 var(--mono); letter-spacing:.16em; color:var(--g3)}
+.note{padding:0 22px 16px; font-size:13px; color:var(--g2); max-width:44ch; min-height:calc(4 * 1.6em + 16px)}
+
+.stage{position:relative; height:340px; display:grid; place-items:center; cursor:pointer;
+  border-top:1px solid var(--line); border-bottom:1px solid var(--line); overflow:hidden}
+.stage:focus-visible{outline:1px solid var(--white); outline-offset:-2px}
+.stage svg{width:300px; height:300px; display:block; margin-top:-18px}
+.blobs{fill:var(--white); filter:url(#goo)}
+.is-zero .blobs{fill:#5A5A5A}
+.stage:hover .blobs{fill:var(--pure)}
+.index{position:absolute; left:0; right:0; bottom:52px; text-align:center;
+  font:400 12px/1 var(--mono); letter-spacing:.24em; color:var(--g1)}
+.word{position:absolute; left:0; right:0; bottom:26px; text-align:center;
+  font:400 12px/1 var(--mono); letter-spacing:.02em; color:var(--g2)}
+.is-progress .word{animation:breathe 1.9s ease-in-out infinite}
+@keyframes breathe{0%,100%{opacity:.45} 50%{opacity:1}}
+.hint{position:absolute; left:0; right:0; bottom:8px; text-align:center;
+  font:500 9px/1 var(--mono); letter-spacing:.2em; color:var(--g3)}
+.frame{position:absolute; left:50%; top:50%; width:196px; height:196px; margin:-116px 0 0 -98px;
+  border:1px solid var(--line); opacity:0; transition:opacity .4s; pointer-events:none}
+.stage:hover .frame{opacity:1}
+
+/* — the word stage — */
+.morph{position:relative; width:300px; height:300px; margin-top:-18px}
+.morph svg{position:absolute; inset:0; margin:0}
+.type{position:absolute; inset:0; display:grid; place-items:center; pointer-events:none; visibility:hidden}  /* measuring only */
+.type .row{display:flex; white-space:pre; font:700 46px/1 var(--type); letter-spacing:.02em}
+.type span{display:inline-block; opacity:0; color:var(--pure);
+  transform-origin:50% 78%; will-change:transform,filter,opacity}
+.cell{fill:var(--white)}
+.stage:hover .cell{fill:var(--pure)}
+.glyph{font-family:var(--type); font-weight:700}
+
+.foot{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:14px 22px 20px}
+.states{display:flex; gap:12px; font:500 10px/1 var(--mono); letter-spacing:.14em; color:var(--g3)}
+.states button{display:flex; align-items:center; gap:6px; background:none; border:0; padding:4px 2px;
+  font:inherit; letter-spacing:inherit; color:inherit; cursor:pointer}
+.states i{width:4px; height:4px; background:var(--g3); transition:background .3s, transform .3s}
+.states button[data-on="true"]{color:var(--white)}
+.states button[data-on="true"] i{background:var(--pure); transform:scale(1.4)}
+.states button:focus-visible{outline:1px solid var(--g2); outline-offset:2px}
+.status{font:500 12px/1 var(--mono); letter-spacing:.06em; color:var(--g1)}
+
+.colophon{display:flex; gap:22px; font:400 10px/1.7 var(--mono); letter-spacing:.1em; color:var(--g3);
+  border-top:1px solid var(--line); padding-top:16px}
+.colophon div:last-child{color:var(--g2)}
+footer{font-size:12.5px; color:var(--g2); max-width:72ch}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">ADVANCED INTERFACE · WEEK 1 · TONE: MINIMAL</div>
+    <h1>Cluster &amp; Mass</h1>
+    <p class="lede">Black, white, three greys. Nothing is drawn but circles — one loader stays a soft body that never repeats a silhouette, the other spends its whole run turning a single dot into a word. The shape is a by-product of where things are, never a frame that plays back.</p>
+    <div class="keys">
+      <span><b>Hover</b> — the bodies brighten, the frame appears</span>
+      <span><b>Click</b> — run, click again to reset</span>
+      <span><b>Mass</b> fills itself on an exponential curve</span>
+    </div>
+  </header>
+
+  <div class="pair">
+    <article class="card" data-id="cluster">
+      <div class="head"><h2>Cluster</h2><span class="kind">INDETERMINATE</span></div>
+      <p class="note">Six bodies drift on unrelated frequencies, so they fuse into a new form every few seconds and one keeps breaking away and rejoining.</p>
+      <div class="stage is-zero" tabindex="0" role="progressbar" aria-label="Cluster, indeterminate" aria-busy="false">
+        <div class="frame"></div>
+        <svg viewBox="0 0 300 300" aria-hidden="true">
+          <defs><filter id="goo"><feGaussianBlur in="SourceGraphic" stdDeviation="8" result="b"/>
+            <feColorMatrix in="b" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 26 -11"/></filter></defs>
+          <g class="blobs"></g>
+        </svg>
+        <div class="word">idle</div>
+        <div class="hint">CLICK TO RUN</div>
+      </div>
+      <div class="foot">
+        <div class="states">
+          <button type="button" data-s="zero" data-on="true"><i></i>ZERO</button>
+          <button type="button" data-s="progress"><i></i>PROGRESS</button>
+          <button type="button" data-s="complete"><i></i>COMPLETE</button>
+        </div>
+        <div class="status">IDLE</div>
+      </div>
+    </article>
+
+    <article class="card" data-id="resolve">
+      <div class="head"><h2>Mass</h2><span class="kind">DETERMINATE</span></div>
+      <p class="note">Zero is one dot. It stretches, tears into six bodies that swim out, then each body pours itself into one letter and hardens — until DESIGN stands still. It runs and restarts by itself.</p>
+      <div class="stage is-zero" tabindex="0" role="progressbar" aria-label="Mass, determinate" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div class="frame"></div>
+        <div class="morph">
+          <svg viewBox="0 0 300 300" aria-hidden="true">
+            <defs><filter id="goo2"><feGaussianBlur in="SourceGraphic" stdDeviation="8" result="b"/>
+              <feColorMatrix in="b" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 26 -11"/></filter></defs>
+            <g class="blobs" style="filter:url(#goo2)"></g>
+          </svg>
+          <div class="type" aria-hidden="true"><div class="row"><span>D</span><span>E</span><span>S</span><span>I</span><span>G</span><span>N</span></div></div>
+        </div>
+        <div class="index">( 000 )</div>
+        <div class="word">a dot</div>
+        <div class="hint">RUNS ON ITS OWN · CLICK TO RESTART</div>
+      </div>
+      <div class="foot">
+        <div class="states">
+          <button type="button" data-s="zero" data-on="true"><i></i>ZERO</button>
+          <button type="button" data-s="progress"><i></i>PROGRESS</button>
+          <button type="button" data-s="complete"><i></i>COMPLETE</button>
+        </div>
+        <div class="status">0%</div>
+      </div>
+    </article>
+  </div>
+
+  <div class="colophon">
+    <div>WEEK1-03</div>
+    <div>MINIMAL SKETCH<br>SOFT BODIES · MERGE AND PART · SET A WORD<br>NO COLOUR · NO GRADIENT · NO SHADOW</div>
+  </div>
+  <footer>Both indicators are built from circles under one blur-and-threshold filter, so their outline is computed rather than drawn — which is why no two frames repeat. Mass measures the live type on load, so the bodies always land on the real letter positions in Poppins Bold rather than on hard-coded coordinates. State is reported to screen readers, each stage takes Enter or Space, and the three labels under a stage are buttons for holding a single state still.</footer>
+</div>
+
+<script>
+(function(){
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const NS = 'http://www.w3.org/2000/svg';
+  const C = 150;
+  const parts = [];
+
+  /* easing */
+  const cl  = x => x < 0 ? 0 : x > 1 ? 1 : x;
+  const seg = (p,a,b) => cl((p - a) / (b - a));
+  const eo  = x => 1 - Math.pow(1 - x, 3);
+  const eio = x => x < .5 ? 4*x*x*x : 1 - Math.pow(-2*x + 2, 3)/2;
+  const back= x => { const c = 1.9, c3 = c + 1;
+                     return 1 + c3*Math.pow(x-1,3) + c*Math.pow(x-1,2); };
+  const mix = (a,b,k) => a + (b - a) * k;
+  const grey= k => { const v = Math.round(mix(104, 255, cl(k))); return 'rgb('+v+','+v+','+v+')'; };
+
+  /* ——— 1. Cluster — indeterminate, unchanged ——— */
+  function buildCluster(stage){
+    const g = stage.querySelector('.blobs');
+    const circles = [];
+    for(let i=0;i<7;i++){
+      const c = document.createElementNS(NS,'circle');
+      g.appendChild(c); circles.push(c);
+    }
+    const seeds = [
+      {r:24, ax:36, ay:20, fx:0.29, fy:0.41, p:0.0},
+      {r:21, ax:56, ay:30, fx:0.37, fy:0.23, p:1.1},
+      {r:17, ax:30, ay:42, fx:0.19, fy:0.53, p:2.3},
+      {r:22, ax:66, ay:16, fx:0.47, fy:0.31, p:3.7},
+      {r:14, ax:84, ay:44, fx:0.13, fy:0.17, p:5.0},   // the one that breaks away
+      {r:19, ax:44, ay:36, fx:0.59, fy:0.43, p:0.7},
+      {r:15, ax:24, ay:26, fx:0.71, fy:0.61, p:4.2}
+    ];
+    return {
+      remeasure(){},
+      draw(t, state){
+        const zero = state === 'zero', done = state === 'complete';
+        const n = zero ? 3 : 7;
+        circles.forEach((c,i)=>{
+          const s = seeds[i];
+          if(i >= n){ c.setAttribute('r', 0); return; }
+          let x, y, r;
+          if(done){                                  // settle into one body and hold
+            const a = (i/7) * Math.PI*2;
+            x = C + Math.cos(a) * 20; y = C + Math.sin(a) * 20; r = 34;
+          } else if(zero){
+            const a = (i/3) * Math.PI*2;
+            x = C + Math.cos(a) * 9; y = C + Math.sin(a) * 9; r = 15;
+          } else {
+            const wob = 1 + 0.26 * Math.sin(t * (0.6 + i*0.11) + s.p*1.9);
+            x = C + Math.sin(t * s.fx + s.p) * s.ax;
+            y = C + Math.cos(t * s.fy + s.p * 1.7) * s.ay;
+            r = s.r * wob;
+          }
+          c.setAttribute('cx', x.toFixed(1));
+          c.setAttribute('cy', y.toFixed(1));
+          c.setAttribute('r', Math.max(0, r).toFixed(1));
+        });
+      }
+    };
+  }
+
+  /* ——— 2. Resolve — determinate: one dot becomes the word DESIGN ———
+     Every letter is set as real Poppins Bold *inside* the same liquid as its body.
+     While the liquid's blur is high the thin letter is swallowed by the blob; as the
+     blur thins, the blob pours itself into the letter's strokes and hardens into type. */
+  function buildResolve(stage){
+    const morph = stage.querySelector('.morph');
+    const svg   = morph.querySelector('svg');
+    const defs  = svg.querySelector('defs');
+    const swarm = stage.querySelector('.blobs');
+    const spans = [...stage.querySelectorAll('.type span')];
+    const N     = spans.length;
+    const uid   = 'rs' + Math.random().toString(36).slice(2,7);
+
+    const mk = (tag, attrs, parent) => {
+      const e = document.createElementNS(NS, tag);
+      for(const k in attrs) e.setAttribute(k, attrs[k]);
+      if(parent) parent.appendChild(e);
+      return e;
+    };
+
+    /* the shared liquid: everything before a letter starts to set */
+    const blobs = [], sats = [];
+    for(let i=0;i<N;i++) blobs.push(mk('ellipse', {}, swarm));
+    for(let j=0;j<3;j++) sats.push(mk('ellipse', {}, swarm));
+
+    /* one private liquid per letter, so each can harden on its own clock */
+    const cells = spans.map((s,i)=>{
+      const f = mk('filter', {id:uid+'f'+i, filterUnits:'userSpaceOnUse', x:-40, y:-40, width:380, height:380}, defs);
+      const blur = mk('feGaussianBlur', {in:'SourceGraphic', stdDeviation:8, result:'b'}, f);
+      mk('feColorMatrix', {in:'b', mode:'matrix', values:'1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 26 -11'}, f);
+      const g    = mk('g', {class:'cell', filter:'url(#'+uid+'f'+i+')'}, svg);
+      const body = mk('ellipse', {rx:0, ry:0}, g);
+      const text = mk('text', {'text-anchor':'middle', class:'glyph'}, g);
+      text.textContent = s.textContent;
+      return {f, blur, g, body, text};
+    });
+
+    const FY = [0.43,0.21,0.53,0.29,0.61,0.35];
+    const PH = [0.0, 1.7, 3.1, 4.6, 2.2, 5.4];
+    const L0 = 0.54, LW = 0.24, LS = 0.036;       // letters set, overlapping windows (on u)
+    const ROT = [-14, 0, 18, 0, -9, 0];
+
+    let L = [], FS = 46;
+    function remeasure(){
+      const bb = morph.getBoundingClientRect();
+      if(!bb.width) return;
+      const k = 300 / bb.width;
+      const row = stage.querySelector('.type .row');
+      const cs  = getComputedStyle(row);
+      const fs  = parseFloat(cs.fontSize) || 46;
+      let base = fs * 0.83, capA = fs * 0.70, capD = 0;     // fallbacks
+      try{
+        const ctx = document.createElement('canvas').getContext('2d');
+        ctx.font = '700 ' + fs + 'px ' + cs.fontFamily;
+        const m = ctx.measureText('D');
+        if(m.fontBoundingBoxAscent && m.fontBoundingBoxDescent && m.actualBoundingBoxAscent){
+          base = (fs - (m.fontBoundingBoxAscent + m.fontBoundingBoxDescent)) / 2 + m.fontBoundingBoxAscent;
+          capA = m.actualBoundingBoxAscent; capD = m.actualBoundingBoxDescent || 0;
+        }
+      }catch(e){}
+      FS = fs * k;
+      L = spans.map(s=>{
+        const r = s.getBoundingClientRect();
+        const baseY = (r.top - bb.top + base) * k;
+        return { x:(r.left + r.width/2 - bb.left) * k, base:baseY,
+                 y: baseY - (capA - capD) / 2 * k,              // centre of the cap band
+                 w: r.width * k, h: (capA + capD) * k };
+      });
+      cells.forEach(c=>{
+        c.text.setAttribute('font-size', FS.toFixed(2));
+        c.text.setAttribute('font-family', cs.fontFamily);
+        c.text.setAttribute('font-weight', 700);
+      });
+    }
+
+    const hideSwarm = () => { blobs.concat(sats).forEach(e=>{ e.setAttribute('rx',0); e.setAttribute('ry',0); }); };
+
+    function draw(t, state, value){
+      const p    = cl(value/100);
+      const zero = state === 'zero', done = state === 'complete';
+      if(!L.length) remeasure();
+
+      /* —— zero: a single dot, at rest —— */
+      if(zero){
+        hideSwarm();
+        blobs[0].setAttribute('cx', C); blobs[0].setAttribute('cy', C);
+        blobs[0].setAttribute('rx', 11); blobs[0].setAttribute('ry', 11);
+        cells.forEach(c=>{ c.g.style.display = 'none'; });
+        return;
+      }
+
+      /* —— complete: the word, crisp and still —— */
+      if(done){
+        hideSwarm();
+        cells.forEach((c,i)=>{
+          const g = L[i];
+          c.g.style.display = '';
+          c.g.removeAttribute('filter');
+          c.body.setAttribute('rx',0); c.body.setAttribute('ry',0);
+          c.text.setAttribute('x', g.x.toFixed(2)); c.text.setAttribute('y', g.base.toFixed(2));
+          c.text.removeAttribute('transform');
+        });
+        return;
+      }
+
+      /* —— progress ——
+         u = the same progress re-expressed as time on the exponential curve, so every
+         stage gets a similar share of the run. It is a pure function of p. */
+      const u = cl(Math.log(1 - p * 100/102) / Math.log(1 - 99.4/102));
+
+      const breath  = seg(u, 0.00, 0.07);
+      const stretch = eo(seg(u, 0.05, 0.16));                  // dot → one long bar
+      const cIn     = eio(seg(u, 0.39, 0.45));                 // bodies regroup…
+      const cOut    = eo(seg(u, 0.46, 0.53));                  // …and burst out again
+      const collapse= cIn * (1 - cOut);
+      const ex      = 0.30 * (1 - eio(seg(u, 0.53, 0.98)));    // the word starts wide, tightens
+      const growX   = eo(seg(u, 0.05, 0.30));
+      const growY   = eo(seg(u, 0.27, 0.42));
+      const life    = eo(seg(u, 0.14, 0.24)) * (1 - eo(seg(u, 0.36, 0.48)));
+      const pulse   = 1 + 0.35 * Math.sin(u * 60) * (1 - breath) * (u > 0 ? 1 : 0);
+
+      for(let i=0;i<N;i++){
+        const g    = L[i] || {x:C, y:C, base:C+16, w:30, h:32};
+        const cell = cells[i];
+        const tear = eo(seg(u, 0.15 + i*0.014, 0.29 + i*0.014));
+        const pull = mix(0.30 * stretch, 1, tear) * (1 - 0.78 * collapse);
+        const ls   = L0 + i*LS;
+        const res  = seg(u, ls, ls + LW);                      // this letter's setting, 0 → 1
+        const soft = 1 - res;
+        const hx   = C + (g.x - C) * (1 + ex);                 // where this letter stands now
+
+        /* the body */
+        const x   = C + (g.x - C) * pull * (1 + ex);
+        const wob = soft * tear * (1 - collapse);
+        const y   = mix(C, g.y, tear)
+                  + Math.sin(t * FY[i] * 2.1 + PH[i]) * 20 * wob
+                  + Math.sin(t * 0.7 + i) * 4 * wob;
+        const wave = Math.sin(t * 1.45 - i * 0.78);
+        const b0   = 11 * pulse;
+        let rx = mix(b0, g.w * 0.40, growX);
+        let ry = mix(b0, g.h * 0.52, growY);
+        rx *= 1 - 0.20 * wave * soft * growY;
+        ry *= 1 + 0.38 * wave * soft * growY;
+        rx *= 1 + 0.35 * collapse; ry *= 1 + 0.20 * collapse;
+
+        if(res <= 0){
+          /* still part of the shared liquid */
+          cell.g.style.display = 'none';
+          const e = blobs[i];
+          e.setAttribute('cx', x.toFixed(1)); e.setAttribute('cy', y.toFixed(1));
+          e.setAttribute('rx', Math.max(0,rx).toFixed(1)); e.setAttribute('ry', Math.max(0,ry).toFixed(1));
+          continue;
+        }
+
+        /* handed over to its own liquid: same blur at the moment of handover, so no seam */
+        blobs[i].setAttribute('rx',0); blobs[i].setAttribute('ry',0);
+        cell.g.style.display = '';
+        cell.g.setAttribute('filter', 'url(#'+uid+'f'+i+')');
+
+        /* 1. the body settles on the letter's centre and fattens slightly — the letter is
+              hidden inside it, still too thin to survive the blur */
+        /* 2. the glyph grows out of the body while the blur thins, so strokes pour out of it */
+        /* 3. the body drains away into the strokes; the blur reaches ~0 and the type is crisp */
+        const settle = eo(seg(res, 0.00, 0.30));
+        const grow   = eo(seg(res, 0.04, 0.55));
+        const drain  = eio(seg(res, 0.22, 0.80));
+        const harden = seg(res, 0.06, 0.97);
+
+        const bx = mix(x, hx, settle), by = mix(y, g.y, settle);
+        const fat = 1 + 0.18 * Math.sin(Math.PI * seg(res, 0, 0.45));
+        cell.body.setAttribute('cx', bx.toFixed(1));
+        cell.body.setAttribute('cy', by.toFixed(1));
+        cell.body.setAttribute('rx', Math.max(0, mix(rx, g.w*0.40, settle) * fat * (1 - drain)).toFixed(1));
+        cell.body.setAttribute('ry', Math.max(0, mix(ry, g.h*0.52, settle) * fat * (1 - drain)).toFixed(1));
+
+        const sd = 0.35 + 7.65 * Math.pow(1 - harden, 1.7);   // thins fast, then lingers as melted type
+        cell.blur.setAttribute('stdDeviation', sd.toFixed(2));
+
+        const sc  = mix(0.30, 1, back(grow) );
+        const rot = (1 - grow) * ROT[i];
+        const landed = u > ls + LW ? Math.exp(-30 * (u - ls - LW)) * Math.sin((u - ls - LW) * 80) * 2.2 : 0;
+        cell.text.setAttribute('x', (hx + landed).toFixed(2));
+        cell.text.setAttribute('y', g.base.toFixed(2));
+        cell.text.setAttribute('transform',
+          'translate(' + (hx + landed).toFixed(2) + ' ' + g.y.toFixed(2) + ')' +
+          ' rotate(' + rot.toFixed(2) + ')' +
+          ' scale(' + sc.toFixed(3) + ')' +
+          ' translate(' + (-(hx + landed)).toFixed(2) + ' ' + (-g.y).toFixed(2) + ')');
+        if(res >= 1) cell.g.removeAttribute('filter');           // fully hardened: plain type
+      }
+
+      /* satellites: three small bodies orbiting in, swallowed by the swarm */
+      sats.forEach((e,j)=>{
+        const a = t * (0.5 + j*0.31) + j * 2.1;
+        const R = (34 + 26 * Math.sin(t * 0.63 + j * 1.4)) * life;
+        e.setAttribute('cx', (C + Math.cos(a) * R * 1.9).toFixed(1));
+        e.setAttribute('cy', (C + Math.sin(a * 1.3) * R * 0.7).toFixed(1));
+        const r = Math.max(0, 10 * life * (0.7 + 0.3 * Math.sin(t * 1.9 + j)));
+        e.setAttribute('rx', r.toFixed(1)); e.setAttribute('ry', r.toFixed(1));
+      });
+    }
+
+    remeasure();
+    return { draw, remeasure };
+  }
+
+  document.querySelectorAll('.card').forEach(card=>{
+    const id = card.dataset.id, stage = card.querySelector('.stage');
+    const btns = [...card.querySelectorAll('.states button')];
+    const status = card.querySelector('.status');
+    const word = card.querySelector('.word'), index = card.querySelector('.index');
+    const hint = card.querySelector('.hint');
+    const det = id === 'resolve';
+    const geo = det ? buildResolve(stage) : buildCluster(stage);
+    let mode = 'zero', value = 0, t = Math.random()*20, auto = det, hold = 0;
+
+    const WORD = {
+      cluster: {zero:'idle', progress:'loading', complete:'done'},
+      resolve: {zero:'a dot', progress:'setting', complete:'design'}
+    }[id];
+    const HINT = {
+      cluster: {zero:'CLICK TO RUN', progress:'CLICK TO RESET', complete:'CLICK TO RESET'},
+      resolve: {zero:'CLICK TO RUN', progress:'RUNS ON ITS OWN · CLICK TO RESTART', complete:'RESTARTING…'}
+    }[id];
+
+    function paintChrome(){
+      stage.classList.remove('is-zero','is-progress','is-complete');
+      stage.classList.add('is-'+mode);
+      btns.forEach(b=>b.dataset.on = String(b.dataset.s === mode));
+      word.textContent = WORD[mode];
+      hint.textContent = HINT[mode];
+      if(det){
+        const v = Math.round(value);
+        index.textContent = '( ' + String(v).padStart(3,'0') + ' )';
+        status.textContent = v + '%';
+        stage.setAttribute('aria-valuenow', v);
+      }else{
+        status.textContent = mode === 'zero' ? 'IDLE' : mode === 'progress' ? 'WORKING' : 'DONE';
+        stage.setAttribute('aria-busy', mode === 'progress');
+        stage.setAttribute('aria-valuetext', mode==='progress' ? 'Working' : mode==='complete' ? 'Done' : 'Not started');
+      }
+    }
+    function set(m, v){
+      mode = m;
+      if(v !== undefined) value = Math.max(0, Math.min(100, v));
+      if(m === 'zero') value = 0;
+      if(m === 'complete') value = 100;
+      paintChrome(); geo.draw(t, mode, value);
+    }
+    function run(){
+      if(!det){ set('progress'); return; }
+      auto = true; hold = 0; set('progress', 0);
+    }
+    function activate(){
+      if(!det){ mode === 'progress' ? set('zero') : run(); return; }
+      run();
+    }
+    stage.addEventListener('click', ()=>activate());
+    stage.addEventListener('keydown', e=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); activate(); } });
+    btns.forEach(b=>b.addEventListener('click', e=>{ e.stopPropagation(); auto = false; set(b.dataset.s); }));
+
+    if(det){
+      const refresh = ()=>{ geo.remeasure(); geo.draw(t, mode, value); };
+      if(document.fonts && document.fonts.ready) document.fonts.ready.then(refresh);
+      addEventListener('resize', refresh);
+    }
+
+    parts.push({
+      tick(dt){
+        if(mode === 'progress' && !reduce) t += dt;
+        if(det && auto){
+          if(mode === 'progress'){
+            value += (102 - value) * (1 - Math.exp(-dt * 0.25));   // exponential, on its own
+            if(value >= 99.4){ set('complete'); hold = 0; return; }
+            paintChrome();
+          } else if(mode === 'complete'){
+            hold += dt; if(hold > 2.2){ set('zero'); hold = 0; }
+          } else {
+            hold += dt; if(hold > 0.7){ set('progress', 0); hold = 0; }
+          }
+        }
+        if(mode === 'progress') geo.draw(t, mode, value);
+      }
+    });
+
+    if(det){ auto = true; set('progress', 0); } else set('progress');
+  });
+
+  let last = performance.now(), visible = true;
+  document.addEventListener('visibilitychange', ()=>{ visible = !document.hidden; last = performance.now(); });
+  (function loop(now){
+    requestAnimationFrame(loop);
+    if(!visible) return;
+    const dt = Math.min(0.05, (now - last)/1000); last = now;
+    parts.forEach(p=>p.tick(dt));
+  })(last);
+})();
+</script>
+
+</body></html>
