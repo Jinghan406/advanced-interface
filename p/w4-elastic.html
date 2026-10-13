@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+</head>
+<body>
+<title>Elastic Sliders</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&display=swap">
+<style>
+/* One tone per page. Stepped above, continuous below, each full width; spec at the foot. Single look by choice. */
+:root {
+  --bg: #2a45f0; --fg: #ffffff; --mut: #b9c3ff; --line: #4a62f3;
+  --card: #2a45f0; --cl: #4058f2; --cf: #ffffff; --cm: #c3cbff; --dd: #e6e9ff;
+  --display: "Bricolage Grotesque", sans-serif; --mono: "Bricolage Grotesque", sans-serif;
+}
+* { box-sizing: border-box; }
+body { -webkit-tap-highlight-color: transparent; background: var(--bg); color: var(--fg); margin: 0; font-family: var(--mono); -webkit-font-smoothing: antialiased; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-inline: max(16px, 4vw); padding-block: 56px 96px; display: flex; flex-direction: column; gap: 40px; }
+.eyebrow { font: 500 11px/1.4 var(--mono); letter-spacing: .16em; color: var(--mut); text-transform: uppercase; margin: 0; }
+h1 { font-family: var(--display); font-weight: 700; font-size: clamp(48px, 8vw, 88px); letter-spacing: -.02em; line-height: 1; margin: 14px 0 0; text-wrap: balance; }
+.lede { margin: 16px 0 0; font: 400 15px/1.65 var(--mono); color: var(--mut); max-width: 62ch; }
+.top { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+.ctrls button { font: 500 10px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--mut); background: transparent; border: 1px solid var(--line); padding: 8px 12px; cursor: pointer; border-radius: 999px; }
+.ctrls button:hover, .ctrls button[aria-pressed="true"] { color: var(--fg); border-color: var(--mut); }
+button:focus-visible { outline: 1px solid var(--fg); outline-offset: 3px; }
+.pair { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; }
+.card { background: var(--card); border: 1px solid var(--cl); color: var(--cf); min-width: 0; border-radius: 4px; overflow: hidden; }
+.card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 20px 24px 0; flex-wrap: wrap; }
+.card-head h2 { margin: 0; font: 500 11px var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--cm); }
+.card-head span { font: 400 12px var(--mono); color: var(--cm); }
+.stage { position: relative; height: 260px; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.hit { position: absolute; inset: 0; cursor: grab; touch-action: pan-y; -webkit-tap-highlight-color: transparent; outline: none; }
+.hit:active { cursor: grabbing; }
+.hit:focus, .hit:focus-visible { outline: none; box-shadow: none; }
+.hit.kb:focus { box-shadow: inset 0 0 0 2px var(--cf); }
+.state { position: absolute; left: 0; right: 0; bottom: 18px; display: flex; justify-content: center; align-items: center; gap: 10px; font: 500 11px var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--cm); pointer-events: none; font-variant-numeric: tabular-nums; }
+.state b { color: var(--cf); font-weight: 500; }
+.state i { width: 3px; height: 3px; border-radius: 50%; background: var(--cm); }
+.spec { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 32px; border-top: 1px solid var(--line); padding-top: 24px; margin-top: 16px; }
+.spec h4 { font: 500 10px var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--mut); margin: 0 0 12px; }
+.spec dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 7px 16px; font: 400 12px/1.5 var(--mono); }
+.spec dt { color: var(--mut); }
+.spec dd { margin: 0; color: var(--dd); font-variant-numeric: tabular-nums; min-width: 0; }
+</style>
+
+<main class="wrap">
+  <div class="top">
+    <header>
+      <p class="eyebrow">Advanced Interface · Week 4 · Sliders · Set 01 · Playful</p>
+      <h1>Elastic</h1>
+      <p class="lede">A rubber band. Pressing pulls it down, letting go makes it twang, and the value hangs from the thumb on a tag that swings with your hand.</p>
+    </header>
+    <div class="ctrls"><button type="button" id="speed" aria-pressed="false">Slow motion 0.25×</button></div>
+  </div>
+  <div class="pair">
+    <section class="card" aria-label="Stepped slider"><div class="card-head"><h2>Stepped · Bounce</h2><span>1–5</span></div>
+      <div class="stage" id="s-step"><span class="state"></span></div></section>
+    <section class="card" aria-label="Continuous slider"><div class="card-head"><h2>Continuous · Stretch</h2><span>0–100 %</span></div>
+      <div class="stage" id="s-cont"><span class="state"></span></div></section>
+  </div>
+  <section class="spec" aria-label="Spec">
+      <div><h4>Global</h4><dl><dt>Blue</dt><dd>#2A45F0</dd><dt>White</dt><dd>#FFFFFF · ahead 40%</dd><dt>Type</dt><dd>Bricolage Grotesque 500–700 · 13–16</dd><dt>Band</dt><dd>4 behind thumb · 1.5 ahead · round caps</dd></dl></div>
+      <div><h4>Thumb</h4><dl><dt>Idle</dt><dd>Ø22 · blue core Ø7</dd><dt>Hover</dt><dd>Ø26 · band sags 3</dd><dt>Press</dt><dd>Ø26 · pulls band down 14</dd><dt>Drag</dt><dd>Ø24 · sag 8 · tag swings with speed</dd><dt>Release</dt><dd>twang k520 c7</dd><dt>Tag</dt><dd>28 tall · radius 8 · string 32</dd></dl></div>
+      <div><h4>Stepped</h4><dl><dt>Pegs</dt><dd>5 dots Ø4 above band</dd><dt>Click</dt><dd>band kicks at each step</dd></dl></div>
+  </section>
+</main>
+
+<script>
+(() => {
+  const DPR = Math.min(2, window.devicePixelRatio || 1);
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const G = { speed: 1 };
+  const TAU = Math.PI * 2;
+  const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const smin = (a, b, k) => { const h = Math.max(k - Math.abs(a - b), 0) / k; return Math.min(a, b) - h * h * k * 0.25; };
+  const now = () => performance.now() / 1000;
+  let kbMode = false;
+  addEventListener('keydown', e => { if (e.key === 'Tab' || e.key.startsWith('Arrow') || e.key === 'Home' || e.key === 'End') kbMode = true; }, true);
+  addEventListener('pointerdown', () => { kbMode = false; }, true);
+  const hash = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
+  const noise = x => { const i = Math.floor(x), f = x - i, u = f * f * (3 - 2 * f); return lerp(hash(i), hash(i + 1), u) * 2 - 1; };
+
+  class Sp {
+    constructor(x, k, c) { this.x = x; this.t = x; this.v = 0; this.k = k; this.c = c; }
+    step(dt) { if (reduce) { this.x = this.t; this.v = 0; return; } const a = this.k * (this.t - this.x) - this.c * this.v; this.v += a * dt; this.x += this.v * dt; }
+    get rest() { return Math.abs(this.t - this.x) < 0.005 && Math.abs(this.v) < 0.01; }
+    snap(v) { this.x = this.t = v; this.v = 0; }
+  }
+
+  class Slider {
+    constructor(stage, o) {
+      this.stage = stage; this.o = o; this.n = o.steps ? o.steps.length : 0;
+      this.p = o.p; this.p0 = o.p; this.hover = false; this.pressed = false; this.drag = false; this.focus = false; this.kbd = -9;
+      this.x0 = 0; this.x1 = 1; this.cap = stage.querySelector('.state');
+      const h = this.hit = document.createElement('div');
+      h.className = 'hit'; h.tabIndex = 0; h.setAttribute('role', 'slider'); h.setAttribute('aria-label', o.name);
+      h.setAttribute('aria-valuemin', this.n ? 0 : o.min); h.setAttribute('aria-valuemax', this.n ? this.n - 1 : o.max);
+      stage.appendChild(h);
+      h.addEventListener('pointerenter', () => { this.hover = true; this.emit(); });
+      h.addEventListener('pointerleave', () => { if (!this.pressed) { this.hover = false; this.emit(); } });
+      h.addEventListener('pointerdown', e => {
+        if (e.button !== 0) return;
+        h.classList.remove('kb'); e.preventDefault();
+        this.pressed = true; this.hover = true; this.sx = e.clientX; this.p0 = this.p; this.downAt = now();
+        try { h.setPointerCapture(e.pointerId); } catch (_) {}
+        h.focus({ preventScroll: true });
+        this.p = this.px(e); this.emit();
+      });
+      h.addEventListener('pointermove', e => {
+        if (!this.pressed) return;
+        if (!this.drag && Math.abs(e.clientX - this.sx) > 3) this.drag = true;
+        if (this.drag) this.p = this.px(e);
+        this.emit();
+      });
+      const up = e => {
+        if (!this.pressed) return;
+        this.pressed = false; this.drag = false; this.upAt = now();
+        if (this.n) this.p = this.idx() / (this.n - 1);
+        if (e.type === 'pointercancel' || !this.inside(e)) this.hover = false;
+        this.emit();
+      };
+      h.addEventListener('pointerup', up); h.addEventListener('pointercancel', up);
+      h.addEventListener('focus', () => { this.focus = kbMode; h.classList.toggle('kb', kbMode); this.emit(); });
+      h.addEventListener('blur', () => { this.focus = false; h.classList.remove('kb'); this.emit(); });
+      h.addEventListener('keydown', e => {
+        const big = e.shiftKey || e.key === 'PageUp' || e.key === 'PageDown';
+        let d = 0;
+        if (['ArrowRight', 'ArrowUp', 'PageUp'].includes(e.key)) d = 1;
+        else if (['ArrowLeft', 'ArrowDown', 'PageDown'].includes(e.key)) d = -1;
+        if (e.key === 'Home') this.p = 0; else if (e.key === 'End') this.p = 1;
+        else if (d) this.p = clamp(this.p + d * (this.n ? 1 / (this.n - 1) : big ? 0.1 : 0.01));
+        else return;
+        e.preventDefault(); h.classList.add('kb'); this.focus = true; if (this.n) this.p = this.idx() / (this.n - 1);
+        this.kbd = now(); this.emit();
+      });
+      this.emit();
+    }
+    px(e) { const r = this.stage.getBoundingClientRect(); return clamp((e.clientX - r.left - this.x0) / (this.x1 - this.x0)); }
+    inside(e) { const r = this.stage.getBoundingClientRect(); return e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom; }
+    idx() { return Math.round(this.p * (this.n - 1)); }
+    valueAt(p) { return this.n ? Math.round(p * (this.n - 1)) : this.o.min + p * (this.o.max - this.o.min); }
+    get value() { return this.valueAt(this.p); }
+    get text() { return this.o.fmt(this.value); }
+    get short() { return (this.o.short || this.o.fmt)(this.value); }
+    shortAt(p) { return (this.o.short || this.o.fmt)(this.valueAt(p)); }
+    get state() { return this.drag ? 'drag' : this.pressed ? 'pressed' : this.hover ? 'hover' : this.focus ? 'focus' : 'idle'; }
+    get near() { return this.hover || this.focus; }
+    get showValue() { return this.pressed || this.drag || now() - this.kbd < 0.9; }
+    emit() {
+      this.hit.setAttribute('aria-valuenow', this.n ? this.idx() : Math.round(this.value * 100) / 100);
+      this.hit.setAttribute('aria-valuetext', this.text);
+      const s = this.state;
+      this.cap.innerHTML = `<b>${s === 'idle' ? 'Default' : s}</b><i></i>${this.text}`;
+    }
+  }
+
+  const R = [];
+  class Base {
+    constructor(stage, slider, kind) {
+      this.st = stage; this.s = slider; this.kind = kind; this.step = kind === 'step'; this.vis = true; this.S = 1;
+      this.cv = document.createElement('canvas'); stage.prepend(this.cv);
+      this.ctx = this.cv.getContext('2d'); this.sp = []; this.cyK = 0.54; R.push(this);
+    }
+    init() {
+      new ResizeObserver(() => this.fit()).observe(this.st);
+      new IntersectionObserver(es => { this.vis = es[0].isIntersecting; }).observe(this.st);
+      this.fit();
+    }
+    fit() {
+      const cw = this.st.clientWidth; if (!cw) return;
+      const S = this.S = clamp(cw / 520, 1, 2.1), ch = Math.round(260 * S);
+      if (this.st.style.height !== ch + 'px') this.st.style.height = ch + 'px';
+      this.w = cw / S; this.h = 260; this.cv.width = Math.round(cw * DPR); this.cv.height = Math.round(ch * DPR);
+      this.pad = Math.max(40, Math.min(72, this.w * 0.11));
+      this.x0 = this.pad; this.x1 = this.w - this.pad;
+      this.s.x0 = this.x0 * S; this.s.x1 = this.x1 * S; this.cy = Math.round(this.h * this.cyK);
+      this.onFit && this.onFit();
+    }
+    X(p) { return this.x0 + p * (this.x1 - this.x0); }
+    xs(i) { return this.X(i / (this.s.n - 1)); }
+    P(x) { return clamp((x - this.x0) / (this.x1 - this.x0)); }
+    target() {
+      let x = this.X(this.s.p);
+      if (this.step && this.s.pressed) {
+        const n = this.s.n - 1, xi = this.X(Math.round(this.s.p * n) / n), d = xi - x;
+        x += d * (this.magnet || 0.5) * Math.pow(clamp(1 - Math.abs(d) / 16), 2);
+      }
+      return x;
+    }
+    tick(dt, t) {
+      this.update(dt, t);
+      const n = Math.max(1, Math.ceil(dt / (1 / 240))), h = dt / n;
+      for (let k = 0; k < n; k++) for (const q of this.sp) q.step(h);
+      this.draw(t);
+    }
+    begin() { const c = this.ctx; c.setTransform(DPR * this.S, 0, 0, DPR * this.S, 0, 0); c.clearRect(0, 0, this.w, this.h); return c; }
+    text(str, x, y, font, color, align = 'left', ls = 0, base = 'alphabetic') {
+      const c = this.ctx; c.font = font; c.fillStyle = color; c.textAlign = align; c.textBaseline = base;
+      if ('letterSpacing' in c) c.letterSpacing = ls + 'px';
+      c.fillText(str, x, y);
+      if ('letterSpacing' in c) c.letterSpacing = '0px';
+    }
+    measure(str, font, ls = 0) { const c = this.ctx; c.font = font; if ('letterSpacing' in c) c.letterSpacing = ls + 'px'; const w = c.measureText(str).width; if ('letterSpacing' in c) c.letterSpacing = '0px'; return w; }
+    circle(x, y, r) { const c = this.ctx; c.beginPath(); c.arc(x, y, Math.max(0, r), 0, TAU); }
+  }
+
+  const W4 = window.W4 = { Sp, Slider, Base, R, G, TAU, DPR, clamp, lerp, smin, now, noise, hash, reduce,
+    mk(id, Ren, kind, o) { const st = document.getElementById(id); return new Ren(st, new Slider(st, o), kind); } };
+
+  let last = performance.now();
+  const loop = ts => {
+    const dt = Math.min(0.05, (ts - last) / 1000) * G.speed; last = ts;
+    for (const r of R) if (r.vis && r.w) r.tick(dt, ts / 1000);
+    requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
+  if (document.fonts) document.fonts.ready.then(() => R.forEach(r => r.fit()));
+  const sp = document.getElementById('speed');
+  sp && sp.addEventListener('click', () => { const on = sp.getAttribute('aria-pressed') !== 'true'; sp.setAttribute('aria-pressed', on); G.speed = on ? 0.25 : 1; });
+})();
+
+(() => {
+  const { Sp, Base, clamp, mk } = W4;
+  const W = '#ffffff', WA = a => `rgba(255,255,255,${a})`, BLUE = '#2a45f0';
+  /* A rubber band. Pressing pulls it down, letting go makes it twang, and the value hangs from the thumb on a swinging tag. */
+  class Elastic extends Base {
+    constructor(st, s, kind) {
+      super(st, s, kind); this.cyK = 0.42;
+      this.x = new Sp(0, 360, 20); this.sag = new Sp(0, 520, 7); this.r = new Sp(11, 380, 16); this.sw = new Sp(0, 90, 5); this.tag = new Sp(0.55, 220, 20);
+      this.sp = [this.x, this.sag, this.r, this.sw, this.tag]; this.last = s.n ? s.idx() : -1;
+      this.init();
+    }
+    onFit() { this.x.snap(this.X(this.s.p)); }
+    update() {
+      const s = this.s;
+      this.x.t = this.target();
+      this.sag.t = s.pressed && !s.drag ? 14 : s.drag ? 8 : s.near ? 3 : 0;
+      this.r.t = s.pressed && !s.drag ? 13 : s.drag ? 12 : s.near ? 13 : 11;
+      this.sw.t = clamp(-this.x.v / 900, -0.9, 0.9);
+      this.tag.t = s.near || s.pressed || s.showValue ? 1 : 0.55;
+      if (this.step) { const i = Math.round(this.P(this.x.x) * (s.n - 1)); if (i !== this.last) { this.sag.v += 120; this.last = i; } }
+    }
+    draw() {
+      const c = this.begin(), cy = this.cy, x0 = this.x0, x1 = this.x1, X = this.x.x, s = this.s, ty = cy + this.sag.x;
+      // pegs at the ends
+      for (const px of [x0, x1]) { this.circle(px, cy, 4); c.fillStyle = W; c.fill(); }
+      if (this.step) s.o.steps.forEach((lab, i) => {
+        const xd = this.xs(i), on = xd <= X + 0.5, yb = xd < X ? cy + (ty - cy) * (xd - x0) / Math.max(1, X - x0) : cy + (ty - cy) * (x1 - xd) / Math.max(1, x1 - X);
+        this.circle(xd, cy - 16, 2); c.fillStyle = on ? W : WA(0.35); c.fill();
+        this.text(lab, xd, cy - 28, '600 13px "Bricolage Grotesque", sans-serif', on ? W : WA(0.5), 'center');
+      });
+      // band
+      c.lineCap = 'round';
+      c.beginPath(); c.moveTo(x0, cy); c.lineTo(X, ty); c.strokeStyle = W; c.lineWidth = 4; c.stroke();
+      c.beginPath(); c.moveTo(X, ty); c.lineTo(x1, cy); c.strokeStyle = WA(0.4); c.lineWidth = 1.5; c.stroke();
+      // tag on a string
+      const ang = this.sw.x, len = 26 * this.tag.x + 6, ax = X, ay = ty + this.r.x;
+      const tx = ax + Math.sin(ang) * len, tyy = ay + Math.cos(ang) * len;
+      c.beginPath(); c.moveTo(ax, ay); c.lineTo(tx, tyy); c.strokeStyle = WA(0.8); c.lineWidth = 1; c.stroke();
+      const txt = s.short, f = '700 15px "Bricolage Grotesque", sans-serif', tw = this.measure(txt, f) + 20, th = 28;
+      c.save(); c.translate(tx, tyy); c.rotate(-ang * 0.9);
+      c.globalAlpha = 0.35 + 0.65 * clamp((this.tag.x - 0.55) / 0.45);
+      c.beginPath(); c.roundRect(-tw / 2, 0, tw, th, 8); c.fillStyle = W; c.fill();
+      this.circle(0, 5, 1.6); c.fillStyle = BLUE; c.fill();
+      this.text(txt, 0, 17, f, BLUE, 'center', 0, 'middle');
+      c.restore();
+      // knob
+      const r = this.r.x;
+      c.save(); c.shadowColor = 'rgba(0,10,80,.35)'; c.shadowBlur = 10; c.shadowOffsetY = 3;
+      this.circle(X, ty, r); c.fillStyle = W; c.fill(); c.restore();
+      this.circle(X, ty, r * 0.32); c.fillStyle = BLUE; c.fill();
+      this.text(s.o.name, x0 - 4, 30, '700 16px "Bricolage Grotesque", sans-serif', W);
+      this.text(s.text, x1 + 4, 30, '500 16px "Bricolage Grotesque", sans-serif', WA(0.75), 'right');
+    }
+  }
+  mk('s-step', Elastic, 'step', { name: 'Bounce', steps: ['1', '2', '3', '4', '5'], p: 0.25, fmt: v => 'Level ' + (v + 1), short: v => String(v + 1) });
+  mk('s-cont', Elastic, 'cont', { name: 'Stretch', min: 0, max: 100, p: 0.6, fmt: v => Math.round(v) + '%', short: v => Math.round(v) + '%' });
+})();
+
+</script>
+
+</body>
+</html>

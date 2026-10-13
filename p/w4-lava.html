@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+</head>
+<body>
+<title>Lava Sliders</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* One tone per page. Stepped above, continuous below, each full width; spec at the foot. Single look by choice. */
+:root {
+  --bg: #0a0a0a; --fg: #f2f2f0; --mut: #8c8c8a; --line: #262626;
+  --card: #0a0a0a; --cl: #1f1f1f; --cf: #f2f2f0; --cm: #8c8c8a; --dd: #cfcfcd;
+  --display: "Inter", sans-serif; --mono: "JetBrains Mono", monospace;
+}
+* { box-sizing: border-box; }
+body { -webkit-tap-highlight-color: transparent; background: var(--bg); color: var(--fg); margin: 0; font-family: var(--mono); -webkit-font-smoothing: antialiased; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-inline: max(16px, 4vw); padding-block: 56px 96px; display: flex; flex-direction: column; gap: 40px; }
+.eyebrow { font: 500 11px/1.4 var(--mono); letter-spacing: .16em; color: var(--mut); text-transform: uppercase; margin: 0; }
+h1 { font-family: var(--display); font-weight: 300; font-size: clamp(48px, 8vw, 88px); letter-spacing: -.02em; line-height: 1; margin: 14px 0 0; text-wrap: balance; }
+.lede { margin: 16px 0 0; font: 400 15px/1.65 var(--mono); color: var(--mut); max-width: 62ch; }
+.top { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+.ctrls button { font: 500 10px var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--mut); background: transparent; border: 1px solid var(--line); padding: 8px 12px; cursor: pointer; border-radius: 999px; }
+.ctrls button:hover, .ctrls button[aria-pressed="true"] { color: var(--fg); border-color: var(--mut); }
+button:focus-visible { outline: 1px solid var(--fg); outline-offset: 3px; }
+.pair { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; }
+.card { background: var(--card); border: 1px solid var(--cl); color: var(--cf); min-width: 0; border-radius: 4px; overflow: hidden; }
+.card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 20px 24px 0; flex-wrap: wrap; }
+.card-head h2 { margin: 0; font: 500 11px var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--cm); }
+.card-head span { font: 400 12px var(--mono); color: var(--cm); }
+.stage { position: relative; height: 260px; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+.stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.hit { position: absolute; inset: 0; cursor: grab; touch-action: pan-y; -webkit-tap-highlight-color: transparent; outline: none; }
+.hit:active { cursor: grabbing; }
+.hit:focus, .hit:focus-visible { outline: none; box-shadow: none; }
+.hit.kb:focus { box-shadow: inset 0 0 0 2px var(--cf); }
+.state { position: absolute; left: 0; right: 0; bottom: 18px; display: flex; justify-content: center; align-items: center; gap: 10px; font: 500 11px var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--cm); pointer-events: none; font-variant-numeric: tabular-nums; }
+.state b { color: var(--cf); font-weight: 500; }
+.state i { width: 3px; height: 3px; border-radius: 50%; background: var(--cm); }
+.spec { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 32px; border-top: 1px solid var(--line); padding-top: 24px; margin-top: 16px; }
+.spec h4 { font: 500 10px var(--mono); letter-spacing: .16em; text-transform: uppercase; color: var(--mut); margin: 0 0 12px; }
+.spec dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 7px 16px; font: 400 12px/1.5 var(--mono); }
+.spec dt { color: var(--mut); }
+.spec dd { margin: 0; color: var(--dd); font-variant-numeric: tabular-nums; min-width: 0; }
+</style>
+
+<main class="wrap">
+  <div class="top">
+    <header>
+      <p class="eyebrow">Advanced Interface · Week 4 · Sliders · Set 02 · Minimal</p>
+      <h1>Lava</h1>
+      <p class="lede">A glass pipe filled with wax. The thumb is a living body of wax sitting right on the pipe: three lobes drift on unrelated rhythms, so its outline never repeats, and a small drop keeps breaking away and falling back. The value rises off it as a second drop that keeps moving too.</p>
+    </header>
+    <div class="ctrls"><button type="button" id="speed" aria-pressed="false">Slow motion 0.25×</button></div>
+  </div>
+  <div class="pair">
+    <section class="card" aria-label="Stepped slider"><div class="card-head"><h2>Stepped · Drip</h2><span>Flow · 1–5</span></div>
+      <div class="stage" id="s-step"><span class="state"></span></div></section>
+    <section class="card" aria-label="Continuous slider"><div class="card-head"><h2>Continuous · Pour</h2><span>Warmth · 0–100 %</span></div>
+      <div class="stage" id="s-cont"><span class="state"></span></div></section>
+  </div>
+  <section class="spec" aria-label="Spec">
+      <div><h4>Global</h4><dl><dt>Ground</dt><dd>#0A0A0A</dd><dt>Wax / text</dt><dd>#F2F2F0</dd><dt>Greys</dt><dd>#8C8C8A · #454543</dd><dt>Pipe</dt><dd>Ø12 · wall 1.5</dd><dt>Wax fill</dt><dd>6.8 thick · 1.9 clear of wall</dd><dt>Type</dt><dd>JetBrains Mono 500 · 10 / +16%</dd><dt>Units</dt><dd>px at 1× · stage scales to width, max 2.1×</dd></dl></div>
+      <div><h4>Thumb</h4><dl><dt>Idle</dt><dd>core Ø22 centred on the pipe + 3 lobes Ø10–14 · never the same shape twice</dd><dt>Hover</dt><dd>core Ø25 · lobes swing 140% · bead Ø9 peeks above</dd><dt>Press</dt><dd>Ø23 · flattens 128% × 86% · lobes pull in to 50%</dd><dt>Drag</dt><dd>Ø25 · lobes trail behind the hand · tail lags</dd><dt>Value drop</dt><dd>Ø30 · rises 58 above the pipe · drifts ±3 · 2 orbiting lobes</dd><dt>Breakaway</dt><dd>Ø7.6–10 drop · lifts 36 and rejoins · about every 9–15 s</dd><dt>Blend</dt><dd>wax 8 · tail 10 · drop 16</dd></dl></div>
+      <div><h4>Behaviour</h4><dl><dt>Drip</dt><dd>5 detents hang under the pipe · Ø3.2 → Ø6 when passed</dd><dt>Snap</dt><dd>16 px magnet · 50% pull</dd><dt>Pour</dt><dd>continuous · ±1, Shift ±10</dd><dt>Lobes</dt><dd>freq 0.73 / 0.47 / 1.13 · 0.51 / 0.89 / 0.37 Hz·2π</dd><dt>Motion</dt><dd>k420 c24 · tail k90 c12</dd></dl></div>
+  </section>
+</main>
+
+<script>
+(() => {
+  const DPR = Math.min(2, window.devicePixelRatio || 1);
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const G = { speed: 1 };
+  const TAU = Math.PI * 2;
+  const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+  const lerp = (a, b, t) => a + (b - a) * t;
+  const smin = (a, b, k) => { const h = Math.max(k - Math.abs(a - b), 0) / k; return Math.min(a, b) - h * h * k * 0.25; };
+  const now = () => performance.now() / 1000;
+  let kbMode = false;
+  addEventListener('keydown', e => { if (e.key === 'Tab' || e.key.startsWith('Arrow') || e.key === 'Home' || e.key === 'End') kbMode = true; }, true);
+  addEventListener('pointerdown', () => { kbMode = false; }, true);
+  const hash = n => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
+  const noise = x => { const i = Math.floor(x), f = x - i, u = f * f * (3 - 2 * f); return lerp(hash(i), hash(i + 1), u) * 2 - 1; };
+
+  class Sp {
+    constructor(x, k, c) { this.x = x; this.t = x; this.v = 0; this.k = k; this.c = c; }
+    step(dt) { if (reduce) { this.x = this.t; this.v = 0; return; } const a = this.k * (this.t - this.x) - this.c * this.v; this.v += a * dt; this.x += this.v * dt; }
+    get rest() { return Math.abs(this.t - this.x) < 0.005 && Math.abs(this.v) < 0.01; }
+    snap(v) { this.x = this.t = v; this.v = 0; }
+  }
+
+  class Slider {
+    constructor(stage, o) {
+      this.stage = stage; this.o = o; this.n = o.steps ? o.steps.length : 0;
+      this.p = o.p; this.p0 = o.p; this.hover = false; this.pressed = false; this.drag = false; this.focus = false; this.kbd = -9;
+      this.x0 = 0; this.x1 = 1; this.cap = stage.querySelector('.state');
+      const h = this.hit = document.createElement('div');
+      h.className = 'hit'; h.tabIndex = 0; h.setAttribute('role', 'slider'); h.setAttribute('aria-label', o.name);
+      h.setAttribute('aria-valuemin', this.n ? 0 : o.min); h.setAttribute('aria-valuemax', this.n ? this.n - 1 : o.max);
+      stage.appendChild(h);
+      h.addEventListener('pointerenter', () => { this.hover = true; this.emit(); });
+      h.addEventListener('pointerleave', () => { if (!this.pressed) { this.hover = false; this.emit(); } });
+      h.addEventListener('pointerdown', e => {
+        if (e.button !== 0) return;
+        h.classList.remove('kb'); e.preventDefault();
+        this.pressed = true; this.hover = true; this.sx = e.clientX; this.p0 = this.p; this.downAt = now();
+        try { h.setPointerCapture(e.pointerId); } catch (_) {}
+        h.focus({ preventScroll: true });
+        this.p = this.px(e); this.emit();
+      });
+      h.addEventListener('pointermove', e => {
+        if (!this.pressed) return;
+        if (!this.drag && Math.abs(e.clientX - this.sx) > 3) this.drag = true;
+        if (this.drag) this.p = this.px(e);
+        this.emit();
+      });
+      const up = e => {
+        if (!this.pressed) return;
+        this.pressed = false; this.drag = false; this.upAt = now();
+        if (this.n) this.p = this.idx() / (this.n - 1);
+        if (e.type === 'pointercancel' || !this.inside(e)) this.hover = false;
+        this.emit();
+      };
+      h.addEventListener('pointerup', up); h.addEventListener('pointercancel', up);
+      h.addEventListener('focus', () => { this.focus = kbMode; h.classList.toggle('kb', kbMode); this.emit(); });
+      h.addEventListener('blur', () => { this.focus = false; h.classList.remove('kb'); this.emit(); });
+      h.addEventListener('keydown', e => {
+        const big = e.shiftKey || e.key === 'PageUp' || e.key === 'PageDown';
+        let d = 0;
+        if (['ArrowRight', 'ArrowUp', 'PageUp'].includes(e.key)) d = 1;
+        else if (['ArrowLeft', 'ArrowDown', 'PageDown'].includes(e.key)) d = -1;
+        if (e.key === 'Home') this.p = 0; else if (e.key === 'End') this.p = 1;
+        else if (d) this.p = clamp(this.p + d * (this.n ? 1 / (this.n - 1) : big ? 0.1 : 0.01));
+        else return;
+        e.preventDefault(); h.classList.add('kb'); this.focus = true; if (this.n) this.p = this.idx() / (this.n - 1);
+        this.kbd = now(); this.emit();
+      });
+      this.emit();
+    }
+    px(e) { const r = this.stage.getBoundingClientRect(); return clamp((e.clientX - r.left - this.x0) / (this.x1 - this.x0)); }
+    inside(e) { const r = this.stage.getBoundingClientRect(); return e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom; }
+    idx() { return Math.round(this.p * (this.n - 1)); }
+    valueAt(p) { return this.n ? Math.round(p * (this.n - 1)) : this.o.min + p * (this.o.max - this.o.min); }
+    get value() { return this.valueAt(this.p); }
+    get text() { return this.o.fmt(this.value); }
+    get short() { return (this.o.short || this.o.fmt)(this.value); }
+    shortAt(p) { return (this.o.short || this.o.fmt)(this.valueAt(p)); }
+    get state() { return this.drag ? 'drag' : this.pressed ? 'pressed' : this.hover ? 'hover' : this.focus ? 'focus' : 'idle'; }
+    get near() { return this.hover || this.focus; }
+    get showValue() { return this.pressed || this.drag || now() - this.kbd < 0.9; }
+    emit() {
+      this.hit.setAttribute('aria-valuenow', this.n ? this.idx() : Math.round(this.value * 100) / 100);
+      this.hit.setAttribute('aria-valuetext', this.text);
+      const s = this.state;
+      this.cap.innerHTML = `<b>${s === 'idle' ? 'Default' : s}</b><i></i>${this.text}`;
+    }
+  }
+
+  const R = [];
+  class Base {
+    constructor(stage, slider, kind) {
+      this.st = stage; this.s = slider; this.kind = kind; this.step = kind === 'step'; this.vis = true; this.S = 1;
+      this.cv = document.createElement('canvas'); stage.prepend(this.cv);
+      this.ctx = this.cv.getContext('2d'); this.sp = []; this.cyK = 0.54; R.push(this);
+    }
+    init() {
+      new ResizeObserver(() => this.fit()).observe(this.st);
+      new IntersectionObserver(es => { this.vis = es[0].isIntersecting; }).observe(this.st);
+      this.fit();
+    }
+    fit() {
+      const cw = this.st.clientWidth; if (!cw) return;
+      const S = this.S = clamp(cw / 520, 1, 2.1), ch = Math.round(260 * S);
+      if (this.st.style.height !== ch + 'px') this.st.style.height = ch + 'px';
+      this.w = cw / S; this.h = 260; this.cv.width = Math.round(cw * DPR); this.cv.height = Math.round(ch * DPR);
+      this.pad = Math.max(40, Math.min(72, this.w * 0.11));
+      this.x0 = this.pad; this.x1 = this.w - this.pad;
+      this.s.x0 = this.x0 * S; this.s.x1 = this.x1 * S; this.cy = Math.round(this.h * this.cyK);
+      this.onFit && this.onFit();
+    }
+    X(p) { return this.x0 + p * (this.x1 - this.x0); }
+    xs(i) { return this.X(i / (this.s.n - 1)); }
+    P(x) { return clamp((x - this.x0) / (this.x1 - this.x0)); }
+    target() {
+      let x = this.X(this.s.p);
+      if (this.step && this.s.pressed) {
+        const n = this.s.n - 1, xi = this.X(Math.round(this.s.p * n) / n), d = xi - x;
+        x += d * (this.magnet || 0.5) * Math.pow(clamp(1 - Math.abs(d) / 16), 2);
+      }
+      return x;
+    }
+    tick(dt, t) {
+      this.update(dt, t);
+      const n = Math.max(1, Math.ceil(dt / (1 / 240))), h = dt / n;
+      for (let k = 0; k < n; k++) for (const q of this.sp) q.step(h);
+      this.draw(t);
+    }
+    begin() { const c = this.ctx; c.setTransform(DPR * this.S, 0, 0, DPR * this.S, 0, 0); c.clearRect(0, 0, this.w, this.h); return c; }
+    text(str, x, y, font, color, align = 'left', ls = 0, base = 'alphabetic') {
+      const c = this.ctx; c.font = font; c.fillStyle = color; c.textAlign = align; c.textBaseline = base;
+      if ('letterSpacing' in c) c.letterSpacing = ls + 'px';
+      c.fillText(str, x, y);
+      if ('letterSpacing' in c) c.letterSpacing = '0px';
+    }
+    measure(str, font, ls = 0) { const c = this.ctx; c.font = font; if ('letterSpacing' in c) c.letterSpacing = ls + 'px'; const w = c.measureText(str).width; if ('letterSpacing' in c) c.letterSpacing = '0px'; return w; }
+    circle(x, y, r) { const c = this.ctx; c.beginPath(); c.arc(x, y, Math.max(0, r), 0, TAU); }
+  }
+
+  const W4 = window.W4 = { Sp, Slider, Base, R, G, TAU, DPR, clamp, lerp, smin, now, noise, hash, reduce,
+    mk(id, Ren, kind, o) { const st = document.getElementById(id); return new Ren(st, new Slider(st, o), kind); } };
+
+  let last = performance.now();
+  const loop = ts => {
+    const dt = Math.min(0.05, (ts - last) / 1000) * G.speed; last = ts;
+    for (const r of R) if (r.vis && r.w) r.tick(dt, ts / 1000);
+    requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
+  if (document.fonts) document.fonts.ready.then(() => R.forEach(r => r.fit()));
+  const sp = document.getElementById('speed');
+  sp && sp.addEventListener('click', () => { const on = sp.getAttribute('aria-pressed') !== 'true'; sp.setAttribute('aria-pressed', on); G.speed = on ? 0.25 : 1; });
+})();
+
+(() => {
+  const { Sp, Base, clamp, smin, mk } = W4;
+  const WAX = [242, 242, 240], INK = '#f2f2f0', MID = '#8c8c8a', DIM = '#454543';
+  /* A glass pipe with wax inside. The thumb is a living body of wax on top of the pipe: three lobes drift on
+     unrelated frequencies (like the Week 1 Cluster), so its outline never repeats, and a small drop keeps
+     breaking away and falling back. The value rises off it as a second drop that wobbles too. */
+  const LOBES = [
+    { fx: 0.73, fy: 0.51, ax: 10, ay: 10, r: 6.8, p: 0.0, w: 0.93 },
+    { fx: 0.47, fy: 0.89, ax: 9, ay: 12, r: 6.0, p: 2.1, w: 1.17 },
+    { fx: 1.13, fy: 0.37, ax: 8, ay: 9, r: 5.2, p: 4.4, w: 0.71 },
+  ];
+  class Lava extends Base {
+    constructor(st, s, kind) {
+      super(st, s, kind); this.cyK = 0.6; this.clock = Math.random() * 40;
+      this.x = new Sp(0, 420, 24); this.tail = new Sp(0, 90, 12); this.bx = new Sp(0, 180, 18);
+      this.r = new Sp(8, 300, 18); this.rise = new Sp(4, 260, 15); this.sq = new Sp(0, 380, 16);
+      this.by = new Sp(0, 220, 16); this.br = new Sp(0, 260, 18); this.amp = new Sp(1, 120, 14); this.lag = new Sp(0, 160, 16);
+      this.nubs = this.step ? s.o.steps.map(() => new Sp(1.6, 260, 16)) : [];
+      this.sp = [this.x, this.tail, this.bx, this.r, this.rise, this.sq, this.by, this.br, this.amp, this.lag, ...this.nubs];
+      this.init();
+    }
+    onFit() { const tx = this.X(this.s.p); [this.x, this.tail, this.bx].forEach(q => q.snap(tx)); this.img = null; }
+    update() {
+      const s = this.s, tx = this.target();
+      this.x.t = this.tail.t = this.bx.t = tx;
+      const show = s.showValue, peek = !show && s.near;
+      const v = Math.abs(this.x.v);
+      this.r.t = s.drag ? 12.5 : s.pressed ? 11.5 : peek ? 12.5 : 11;
+      this.rise.t = 0;
+      this.sq.t = s.pressed && !s.drag ? 0.28 : s.drag ? -Math.min(0.22, v / 3000) : 0;
+      this.amp.t = s.pressed && !s.drag ? 0.5 : s.drag ? 1.2 : peek ? 1.4 : 1;
+      this.lag.t = clamp(-this.x.v / 1200, -1, 1);
+      this.by.t = show ? 58 : peek ? 34 : 0;
+      this.br.t = show ? 15 : peek ? 4.5 : 0;
+      this.nubs.forEach((b, i) => { b.t = this.xs(i) <= this.x.x + 0.5 ? 3 : 1.6; });
+    }
+    tick(dt, t) {
+      this.clock += W4.reduce ? 0 : dt;
+      this.update(dt, t);
+      const n = Math.max(1, Math.ceil(dt / (1 / 240))), h = dt / n;
+      for (let k = 0; k < n; k++) for (const q of this.sp) q.step(h);
+      this.draw();
+    }
+    draw() {
+      const c = this.ctx, D = W4.DPR, S = this.S, cy = this.cy, Z = Math.min(2, D * S), k = this.clock;
+      const top = cy - 98, BH = 132, W = Math.ceil(this.w * Z), H = Math.ceil(BH * Z);
+      if (!this.off) { this.off = document.createElement('canvas'); this.octx = this.off.getContext('2d'); }
+      if (this.off.width !== W || this.off.height !== H) { this.off.width = W; this.off.height = H; this.img = null; }
+      if (!this.img) this.img = this.octx.createImageData(W, H);
+      const d = this.img.data, inv = 1 / Z, x0 = this.x0, x1 = this.x1, X = this.x.x, r = this.r.x, A = this.amp.x, lag = this.lag.x;
+      const rx = r * (1 + this.sq.x), ry = r * (1 - this.sq.x * 0.5), rm = Math.min(rx, ry);
+      const ty = cy - this.rise.x, tl = this.tail.x, tr = r * 0.7;
+      const br = this.br.x, showK = clamp(br / 15);
+      const bx = this.bx.x + Math.sin(k * 0.9) * 3 * showK, by = cy - 5 - this.by.x + Math.sin(k * 1.3) * 2 * showK;
+      // the living lobes around the thumb
+      const lobes = LOBES.map((L, i) => [
+        X + Math.sin(k * L.fx + L.p) * L.ax * A + lag * 9 * (i + 1) / 3,
+        ty + Math.sin(k * L.fy + L.p * 1.7) * L.ay * A,
+        L.r * (1 + 0.3 * Math.sin(k * L.w + L.p * 1.3)) * (0.75 + 0.25 * A)]);
+      // the drop that keeps breaking away and falling back
+      const lift = clamp((Math.sin(k * 0.41 + 1.3) + 0.6 * Math.sin(k * 0.67 + 0.4) + 0.1) / 1.5);
+      const sep = lift * lift * (3 - 2 * lift) * (1 - showK) * A;
+      const sx = X + Math.sin(k * 0.53) * 6 + lag * 14, sy = ty - 12 - sep * 38, sr = (3.8 + 1.2 * Math.sin(k * 1.7)) * (sep > 0.02 ? 1 : 0);
+      // value drop lobes
+      const vl = [0, 1].map(j => { const a = k * (0.6 + 0.27 * j) + j * 2.4; return [bx + Math.cos(a) * br * 0.72, by + Math.sin(a) * br * 0.62, br * 0.34 * (1 + 0.2 * Math.sin(k * 1.9 + j))]; });
+      const nubs = this.nubs.map((b, i) => [this.xs(i), b.x]);
+      const nearX = 58 + Math.abs(lag) * 20;
+      for (let j = 0; j < H; j++) {
+        const py = top + (j + 0.5) * inv, dy = py - cy, ady = Math.abs(dy), dyt = py - ty, dyb = py - by, ey = dyt / ry;
+        let o = j * W * 4;
+        if (dy > 34) { d.fill(0, o, o + W * 4); continue; }
+        const band = dy > -13 && dy < 11.5;
+        const rowBlob = dy > -66 || (br > 0.3 && Math.abs(dyb) < br + 18);
+        if (!band && !rowBlob) { d.fill(0, o, o + W * 4); continue; }
+        for (let i = 0; i < W; i++, o += 4) {
+          const px = (i + 0.5) * inv;
+          const nearT = Math.abs(px - X) < nearX || Math.abs(px - tl) < 22 || Math.abs(px - sx) < 14;
+          const nearV = br > 0.3 && Math.abs(px - bx) < br + 18;
+          if (!band && !nearT && !nearV) { d[o + 3] = 0; continue; }
+          let f = 1e9, w = 1e9;
+          if (band) {
+            let dx = px < x0 ? x0 - px : px > x1 ? px - x1 : 0;
+            f = Math.abs(Math.sqrt(dx * dx + dy * dy) - 6) - 0.75;
+            dx = px < x0 ? x0 - px : px > X ? px - X : 0;
+            w = Math.sqrt(dx * dx + dy * dy) - 3.4;
+            for (let b = 0; b < nubs.length; b++) { const q = px - nubs[b][0]; if (Math.abs(q) < 8) { const qy = py - (cy + 7.5); w = smin(w, Math.sqrt(q * q + qy * qy) - nubs[b][1], 3); } }
+          }
+          if (nearT) {
+            const ex = (px - X) / rx;
+            let fb = (Math.sqrt(ex * ex + ey * ey) - 1) * rm;
+            const qt = px - tl; fb = smin(fb, Math.sqrt(qt * qt + dyt * dyt) - tr, 10);
+            for (let l = 0; l < 3; l++) { const qx = px - lobes[l][0], qy = py - lobes[l][1]; fb = smin(fb, Math.sqrt(qx * qx + qy * qy) - lobes[l][2], 9); }
+            if (sr > 0) { const qx = px - sx, qy = py - sy; fb = smin(fb, Math.sqrt(qx * qx + qy * qy) - sr, 7); }
+            w = smin(w, fb, 8);
+          }
+          if (nearV) {
+            const qb = px - bx; let fv = Math.sqrt(qb * qb + dyb * dyb) - br;
+            for (const L of vl) { const qx = px - L[0], qy = py - L[1]; fv = smin(fv, Math.sqrt(qx * qx + qy * qy) - L[2], 8); }
+            w = smin(w, fv, 16);
+          }
+          f = Math.min(f, w);
+          const a = 0.5 - f * Z;
+          d[o] = WAX[0]; d[o + 1] = WAX[1]; d[o + 2] = WAX[2]; d[o + 3] = a <= 0 ? 0 : a >= 1 ? 255 : a * 255;
+        }
+      }
+      this.octx.putImageData(this.img, 0, 0);
+      c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, this.cv.width, this.cv.height);
+      c.setTransform(D * S, 0, 0, D * S, 0, 0); c.imageSmoothingEnabled = true;
+      c.drawImage(this.off, 0, top, W / Z, BH);
+      const ta = clamp((br - 9) / 6);
+      if (ta > 0) this.text(this.s.short, bx, by + 0.5, '500 11px "JetBrains Mono", monospace', `rgba(10,10,10,${ta})`, 'center', 0, 'middle');
+      const mono = '500 10px "JetBrains Mono", monospace';
+      if (this.step) this.s.o.steps.forEach((lab, i) => this.text(lab, this.xs(i), cy + 44, mono, this.xs(i) <= X + 0.5 ? INK : DIM, 'center', 0.6));
+      else { this.text('0', x0, cy + 44, mono, DIM, 'center'); this.text('100', x1, cy + 44, mono, DIM, 'center'); }
+      this.text(this.s.o.name.toUpperCase(), x0 - 6, 34, mono, MID, 'left', 1.6);
+      this.text(this.s.text.toUpperCase(), x1 + 6, 34, mono, INK, 'right', 1.6);
+    }
+  }
+  mk('s-step', Lava, 'step', { name: 'Flow', steps: ['1', '2', '3', '4', '5'], p: 0.5, fmt: v => 'Flow ' + (v + 1), short: v => String(v + 1) });
+  mk('s-cont', Lava, 'cont', { name: 'Warmth', min: 0, max: 100, p: 0.62, fmt: v => Math.round(v) + ' %', short: v => String(Math.round(v)) });
+})();
+
+</script>
+
+</body>
+</html>
