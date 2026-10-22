@@ -1,0 +1,566 @@
+<title>Telemetry Console</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Michroma&family=Chakra+Petch:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+/* Telemetry: a space-station systems console. Graphite glass and ice-blue signal. Michroma for level titles, Chakra Petch caps for row titles, JetBrains Mono with slashed zeros for every readout. Brackets lock onto the hovered row, values re-resolve, levels wipe in with a clean edge. Dark look by choice. */
+:root{--pad-x:16px;--pad-y:12px;--gap-lead:12px;--gap-trail:12px;--trail-in:8px;--icon:20px;--avatar:36px;--thumb-w:64px;--thumb-h:40px;--ti:16px;--h1:48px;--h2:64px;--div-w:1px;--sub-in:32px;--line-gap:2px;--avatar-r:0px;--thumb-r:2px;--stroke:1.25;--t-f:"Chakra Petch","Rajdhani","Arial Narrow",sans-serif;--t-w:500;--t-s:15px;--t-lh:20px;--t-ls:0.06em;--t-tt:uppercase;--s-f:"JetBrains Mono",ui-monospace,Menlo,monospace;--s-w:400;--s-s:11px;--s-lh:16px;--s-ls:0.02em;--m-f:"JetBrains Mono",ui-monospace,Menlo,monospace;--m-w:500;--m-s:12px;--m-lh:16px;--m-ls:0.04em;--exp-d:380ms;--exp-e:cubic-bezier(.2,.9,.2,1);--page:#070708;--stage:#0b0b0c;--panel:#0f0f10;--ink:#ededee;--muted:#8a8a8f;--line:#26262a;--accent:#8fd3ff;--warn:#ffb547;--red:#ff6b8b;--div:#26262a;--list-bg:#141415;--dev-r:10px;--stage-r:4px;--h1-w:400;--h1-ls:.02em;--h2-w:400;--h2-ls:.06em;--lt-font:400 21px/28px var(--f-disp);--lt-ls:.08em;--back-font:500 11px/1 var(--f-mono);--back-ls:.14em;--back-tt:uppercase;--kick-c:var(--accent);--glabel-font:500 10px/14px var(--f-mono);--glabel-ls:.16em;--glabel-tt:uppercase;--glabel-mb:8px;--grp-gap:22px;--av-font:500 12px/1 var(--f-mono);--div-l:0px;--cell-bd:1px solid #26262a;--cell-r:4px;--cell-p:6px;--ana-bg:#09090a;--dot:rgba(143,211,255,.14);--tbtn-r:2px;--h1-tt:uppercase;--h1-max:72px;--h2-tt:uppercase;--h2-s:18px;--lt-tt:uppercase;--kick-font:500 10px/1.4 var(--f-mono);--kick-ls:.16em;--f-disp:"Michroma","Eurostile","Microgramma","Arial Black",sans-serif;--f-body:"Chakra Petch","Rajdhani","Arial Narrow",sans-serif;--f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}
+:root{--k:1}
+@media (prefers-reduced-motion: reduce){:root{--k:.02}}
+body{margin:0;background:var(--page);color:var(--ink);font-family:var(--f-body);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+@media (min-width:720px){body{padding-left:max(40px,env(safe-area-inset-left,0px));padding-right:max(40px,env(safe-area-inset-right,0px))}}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;text-align:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+button:focus{outline:none}
+.wrap{max-width:1160px;margin:0 auto;padding-block:48px 120px;display:flex;flex-direction:column;gap:72px}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:20px 32px}
+.eyebrow{margin:0;font:500 11px/1.5 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.top h1{margin:12px 0 0;font-family:var(--f-disp);font-weight:var(--h1-w,400);font-style:var(--h1-fs,normal);font-size:clamp(48px,9vw,var(--h1-max,96px));line-height:.95;letter-spacing:var(--h1-ls,-.02em);text-transform:var(--h1-tt,none);font-stretch:var(--h1-fst,100%);text-wrap:balance;color:var(--h1-c,var(--ink))}
+.tools{display:flex;gap:8px;align-items:center}
+.tbtn{font:500 10px/1 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);padding:9px 12px;border-radius:var(--tbtn-r,0);transition:color calc(160ms * var(--k)),border-color calc(160ms * var(--k))}
+.tbtn:hover{color:var(--ink)}
+.tbtn[aria-pressed="true"]{color:var(--ink);border-color:var(--ink)}
+.tbtn:focus-visible,.back:focus-visible{outline:1px solid currentColor;outline-offset:2px}
+
+.sec{display:flex;flex-direction:column;gap:20px}
+.sec-h{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;border-top:var(--rule-w,1px) solid var(--rule,var(--line));padding-top:14px;margin:0}
+.sec-h h2{margin:0;font-family:var(--f-disp);font-weight:var(--h2-w,400);font-style:var(--h2-fs,normal);font-size:var(--h2-s,24px);line-height:1.2;text-transform:var(--h2-tt,none);letter-spacing:var(--h2-ls,0)}
+.sec-h span{font:500 10px/1.4 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+
+/* demo */
+.demo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,330px);gap:28px;align-items:start}
+@media (max-width:920px){.demo{grid-template-columns:minmax(0,1fr)}}
+.stage{position:relative;display:flex;flex-direction:column;align-items:center;gap:18px;padding:44px 16px 22px;background:var(--stage);border-radius:var(--stage-r,0);overflow:hidden;isolation:isolate}
+.device{position:relative;width:min(390px,100%);height:664px;background:var(--panel);border-radius:var(--dev-r,0);overflow:hidden;box-shadow:var(--dev-sh,none);border:var(--dev-bd,0 solid transparent);isolation:isolate}
+.hint{position:relative;font:500 10px/1.6 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--hint-c,var(--muted));text-align:center;margin:0}
+.screen{position:absolute;inset:0;overflow:hidden}
+.level{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--level-bg,var(--panel))}
+.level.parked{visibility:hidden;pointer-events:none}
+.level.parked *,.vh,.vh *{visibility:hidden!important}
+.bar{flex:none;display:flex;flex-direction:column;justify-content:flex-end;gap:4px;min-height:var(--bar-h,112px);padding:16px var(--bar-px,16px) var(--bar-pb,10px)}
+.back{align-self:flex-start;display:inline-flex;align-items:center;gap:4px;min-height:32px;margin-left:-6px;padding:0 8px 0 2px;color:var(--back-c,var(--accent));font:var(--back-font,400 15px/1 var(--f-body));letter-spacing:var(--back-ls,0);text-transform:var(--back-tt,none);border-radius:6px}
+.back .ic{width:20px;height:20px}
+.back-sp{display:block;height:32px}
+.kick{margin:0;font:var(--kick-font,500 10px/1.4 var(--f-mono));letter-spacing:var(--kick-ls,.14em);text-transform:uppercase;color:var(--kick-c,var(--muted))}
+.lt{margin:0;font:var(--lt-font);letter-spacing:var(--lt-ls,0);text-transform:var(--lt-tt,none);color:var(--lt-c,var(--ink));font-stretch:var(--lt-fst,100%)}
+.scroll{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:8px 0 48px;scrollbar-width:none;overscroll-behavior:contain}
+.scroll::-webkit-scrollbar{display:none}
+.grp{margin:0 var(--grp-mx,0px) var(--grp-gap,26px)}
+.glabel{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin:0 0 var(--glabel-mb,6px);padding:0 var(--glabel-px,var(--pad-x));font:var(--glabel-font);letter-spacing:var(--glabel-ls,0);text-transform:var(--glabel-tt,none);color:var(--glabel-c,var(--muted))}
+
+/* list item system */
+.list{list-style:none;margin:0;padding:0;position:relative;background:var(--list-bg,transparent);border-radius:var(--list-r,0)}
+.item{display:block}
+.row{position:relative;display:flex;align-items:center;width:100%;min-height:var(--h1);padding:var(--pad-y) var(--pad-x) var(--pad-y) var(--px-l,var(--pad-x));color:var(--row-ink,var(--ink));text-align:left;-webkit-user-select:none;user-select:none;--lw:0px;--lg:0px}
+.row.two{min-height:var(--h2)}
+.row>*{position:relative}
+.sub .row{--px-l:calc(var(--pad-x) + var(--sub-in,0px))}
+.row.L-i{--lw:var(--icon);--lg:var(--gap-lead)}
+.row.L-a{--lw:var(--avatar);--lg:var(--gap-lead)}
+.row.L-t{--lw:var(--thumb-w);--lg:var(--gap-lead)}
+.lead{flex:none;display:grid;place-items:center;margin-right:var(--gap-lead)}
+.lead-i{width:var(--icon);height:var(--icon);color:var(--lead-c,currentColor)}
+.lead-i .ic{width:100%;height:100%}
+.lead-a{width:var(--avatar);height:var(--avatar);border-radius:var(--avatar-r);font:var(--av-font);letter-spacing:var(--av-ls,0);overflow:hidden;color:var(--av-c,inherit);background:var(--av-bg,transparent);box-shadow:var(--av-sh,none)}
+.lead-t{width:var(--thumb-w);height:var(--thumb-h);border-radius:var(--thumb-r);overflow:hidden;box-shadow:var(--th-sh,none)}
+.th{display:block;width:100%;height:100%;background-size:cover;background-position:center}
+.body{flex:1;min-width:0;display:flex;flex-direction:column;gap:var(--line-gap,0px)}
+.t{display:block;font-family:var(--t-f);font-size:var(--t-s);line-height:var(--t-lh);font-weight:var(--t-w);letter-spacing:var(--t-ls,0);text-transform:var(--t-tt,none);font-style:var(--t-fs,normal);font-stretch:var(--t-fst,100%);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tt{position:relative}
+.s{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-family:var(--s-f);font-size:var(--s-s);line-height:var(--s-lh);font-weight:var(--s-w);letter-spacing:var(--s-ls,0);font-style:var(--s-fs,normal);text-transform:var(--s-tt,none);color:var(--row-muted,var(--muted))}
+.trail{flex:none;display:flex;align-items:center;gap:var(--trail-in,6px);margin-left:var(--gap-trail);color:var(--trail-c,var(--row-muted,var(--muted)))}
+.meta{font-family:var(--m-f);font-size:var(--m-s);line-height:var(--m-lh);font-weight:var(--m-w);letter-spacing:var(--m-ls,0);text-transform:var(--m-tt,none);font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--meta-c,inherit)}
+.ti{display:grid;place-items:center;width:var(--ti);height:var(--ti);color:var(--ti-c,inherit)}
+.ti .ic{width:100%;height:100%}
+.ic{display:block;stroke-width:var(--stroke);overflow:visible}
+.list>.item:not(:last-child)>.row::after{content:"";position:absolute;left:var(--div-l,calc(var(--px-l,var(--pad-x)) + var(--lw) + var(--lg)));right:var(--div-r,0px);bottom:0;height:var(--div-w);background:var(--div,var(--line));pointer-events:none}
+
+.kids{display:grid;grid-template-rows:0fr;visibility:hidden;transition:grid-template-rows var(--exp-d) var(--exp-e),visibility 0s linear var(--exp-d)}
+.item.open>.kids{grid-template-rows:1fr;visibility:visible;transition:grid-template-rows var(--exp-d) var(--exp-e),visibility 0s}
+.kin{min-height:0;overflow:hidden}
+.row[data-exp] .ti .ic{transition:transform var(--exp-d) var(--exp-e)}
+.item.open>.row .ti .ic{transform:rotate(var(--exp-rot,180deg))}
+
+/* states + system */
+.states{display:grid;gap:16px}
+.cell{display:flex;flex-direction:column;gap:8px;min-width:0}
+.cap{margin:0;display:flex;justify-content:space-between;gap:8px;font:500 10px/1.4 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.cap i{font-style:normal;opacity:.7}
+.panel{position:relative;background:var(--cell-bg,var(--panel));border-radius:var(--cell-r,0);padding:var(--cell-p,8px 0);border:var(--cell-bd,0 solid transparent);box-shadow:var(--cell-sh,none);isolation:isolate}
+.cell .panel{pointer-events:none}
+.sys{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,320px),1fr));gap:22px 24px}
+
+/* spec */
+.spec{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:36px 48px;align-items:start}
+@media (max-width:920px){.spec{grid-template-columns:minmax(0,1fr)}}
+.anas{display:flex;flex-direction:column;gap:22px;min-width:0}
+.ana-box{position:relative;overflow-x:auto;padding:44px 76px 44px 88px;background-color:var(--ana-bg,var(--stage));background-image:radial-gradient(var(--dot,rgba(127,127,127,.28)) 1px,transparent 1.3px);background-size:8px 8px;border-radius:var(--cell-r,0)}
+.ana-in{position:relative;min-width:300px;background:var(--panel);pointer-events:none}
+.marks{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none}
+.mk{position:absolute;color:var(--red);font:500 10px/1 var(--f-mono);letter-spacing:0}
+.mk.h{height:7px;border-left:1px solid;border-right:1px solid}
+.mk.h::before{content:"";position:absolute;left:0;right:0;top:3px;border-top:1px solid}
+.mk.v{width:7px;border-top:1px solid;border-bottom:1px solid}
+.mk.v::before{content:"";position:absolute;top:0;bottom:0;left:3px;border-left:1px solid}
+.mk b{position:absolute;font-weight:500;white-space:nowrap;font-variant-numeric:tabular-nums}
+.mk.h b{bottom:11px;left:50%;transform:translateX(-50%)}
+.mk.h.below b{bottom:auto;top:11px}
+.mk.v b{right:12px;top:50%;transform:translateY(-50%)}
+.mk.v.right b{right:auto;left:12px}
+.band{position:absolute;background:var(--red);opacity:.16}
+.tables{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:30px 32px;min-width:0}
+.tbl h3{margin:0 0 10px;padding-bottom:8px;border-bottom:1px solid var(--line);font:500 10px/1.4 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.tbl dl{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:7px 16px;font:400 12px/1.45 var(--f-mono)}
+.tbl dt{color:var(--muted)}
+.tbl dd{margin:0;color:var(--ink);font-variant-numeric:tabular-nums;min-width:0;overflow-wrap:anywhere}
+.sw{display:inline-block;width:10px;height:10px;border:1px solid var(--line);vertical-align:-1px;margin-right:7px}
+
+.study{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:30px 24px}
+.study .panel{pointer-events:auto}
+.note{margin:0;font:300 13px/1.55 var(--f-body);color:var(--muted);max-width:46ch;text-wrap:pretty}
+
+
+.device{border:1px solid #26262a;box-shadow:0 0 0 6px #0c0c0d,0 40px 80px -30px rgba(0,0,0,.9)}
+.grp{margin-left:12px;margin-right:12px}
+.list{border:1px solid var(--line);border-radius:4px;background:var(--list-bg)}
+.list.sub{border:0;border-radius:0;background:transparent}
+.glabel{padding:0 4px}
+.gr{color:var(--accent)}
+.row{transition:background-color calc(160ms * var(--k))}
+.row::before{content:"";position:absolute;inset:-3px;pointer-events:none;opacity:0;transform:scale(1.03);z-index:2;
+  transition:opacity calc(160ms * var(--k)),transform calc(240ms * var(--k)) cubic-bezier(.2,.9,.2,1.25),inset calc(240ms * var(--k)) cubic-bezier(.2,.9,.2,1.25);
+  background:linear-gradient(var(--accent),var(--accent)) left top/8px 1px no-repeat,linear-gradient(var(--accent),var(--accent)) left top/1px 8px no-repeat,
+  linear-gradient(var(--accent),var(--accent)) right top/8px 1px no-repeat,linear-gradient(var(--accent),var(--accent)) right top/1px 8px no-repeat,
+  linear-gradient(var(--accent),var(--accent)) left bottom/8px 1px no-repeat,linear-gradient(var(--accent),var(--accent)) left bottom/1px 8px no-repeat,
+  linear-gradient(var(--accent),var(--accent)) right bottom/8px 1px no-repeat,linear-gradient(var(--accent),var(--accent)) right bottom/1px 8px no-repeat}
+.row:is(.is-hover,.s-hover)::before{opacity:1;transform:none;inset:3px}
+.row:is(.is-press,.s-press)::before{opacity:1;transform:none;inset:6px}
+.row:is(.is-hover,.s-hover) .ti{color:var(--accent);transform:translateX(2px)}
+.ti{transition:transform calc(200ms * var(--k)),color calc(200ms * var(--k))}
+.row:is(.is-press,.s-press){background:rgba(143,211,255,.09)}
+.row:is(.is-press,.s-press) .t{color:var(--accent)}
+.fx{position:absolute!important;inset:0;overflow:hidden;pointer-events:none}
+.fx::before{content:"";position:absolute;top:0;bottom:0;width:55%;left:-55%;background:linear-gradient(90deg,transparent,rgba(143,211,255,.16),transparent)}
+.row:is(.is-hover,.s-hover) .fx::before{animation:sweep calc(720ms * var(--k)) cubic-bezier(.3,.6,.3,1) both}
+@keyframes sweep{to{left:100%}}
+.fx::after{content:"";position:absolute;top:0;bottom:0;left:var(--mx,50%);width:1px;background:linear-gradient(transparent,rgba(143,211,255,.55),transparent);opacity:0;transition:opacity calc(200ms * var(--k))}
+.row.is-hover .fx::after{opacity:1}
+.meta{color:var(--ink)}
+.mt-warn{color:var(--warn)}
+.mt-live{color:#ff6b6b;display:inline-flex;align-items:center;gap:6px}
+.mt-live::before{content:"";width:6px;height:6px;border-radius:50%;background:#ff6b6b;animation:blink 1.2s steps(2,start) infinite}
+@keyframes blink{to{visibility:hidden}}
+.lead-i{color:var(--accent)}
+.lead-a{display:grid;place-items:center;clip-path:polygon(0 0,calc(100% - 9px) 0,100% 9px,100% 100%,0 100%);background:rgba(143,211,255,.13);color:var(--accent)}
+.av2{background:rgba(255,181,71,.14);color:var(--warn)}
+.lead-t{box-shadow:inset 0 0 0 1px rgba(143,211,255,.25)}
+.th{position:relative}
+.th1{background:repeating-linear-gradient(0deg,rgba(255,255,255,.05) 0 1px,transparent 1px 3px),radial-gradient(circle at 50% 175%,#1d4f7a 0 62%,#9fd8ff 62.5% 63.5%,transparent 64.5%),radial-gradient(circle at 80% 20%,#16212d,#04070b)}
+.th2{background:repeating-linear-gradient(0deg,rgba(255,255,255,.05) 0 1px,transparent 1px 3px),radial-gradient(ellipse at 30% 90%,#2b6a5f,transparent 60%),#05080c}
+.th3{background:repeating-linear-gradient(90deg,#1e3a58 0 7px,#09121c 7px 8px),repeating-linear-gradient(0deg,transparent 0 9px,#09121c 9px 10px);background-blend-mode:multiply}
+.sub>.item{position:relative;clip-path:inset(0 100% 0 0);transition:clip-path calc(180ms * var(--k))}
+.item.open>.kids .sub>.item{clip-path:inset(0 0 0 0);transition:clip-path calc(440ms * var(--k)) cubic-bezier(.2,.9,.2,1) calc(calc(90ms * var(--k)) + var(--i) * calc(60ms * var(--k)))}
+.list.sub::before{content:"";position:absolute;left:calc(var(--pad-x) + 9.5px);top:0;bottom:24px;width:1px;background:rgba(143,211,255,.4);transform:scaleY(0);transform-origin:top;transition:transform calc(200ms * var(--k))}
+.item.open>.kids .list.sub::before{transform:scaleY(1);transition:transform calc(420ms * var(--k)) cubic-bezier(.2,.9,.2,1)}
+.sub>.item::before{content:"";position:absolute;left:calc(var(--pad-x) + 10px);top:24px;width:12px;height:1px;background:rgba(143,211,255,.4)}
+.sub .row{min-height:48px}
+.level{--level-bg:linear-gradient(rgba(255,255,255,.022) 1px,transparent 1px) 0 0/100% 24px,#0f0f10}
+@keyframes wipe-f{from{clip-path:inset(0 0 0 100%)}to{clip-path:inset(0)}}
+@keyframes wipe-b{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0)}}
+@keyframes scan-f{from{left:100%;opacity:1}90%{opacity:1}to{left:0;opacity:0}}
+@keyframes scan-b{from{left:0;opacity:1}90%{opacity:1}to{left:100%;opacity:0}}
+@keyframes dim{to{opacity:.25;transform:translateX(var(--dx))}}
+.level.in-f,.level.in-b{z-index:2}
+.level.in-f{animation:wipe-f calc(440ms * var(--k)) cubic-bezier(.7,0,.2,1) both}
+.level.in-b{animation:wipe-b calc(440ms * var(--k)) cubic-bezier(.7,0,.2,1) both}
+.level.in-f::after,.level.in-b::after{content:"";position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;background:var(--accent);box-shadow:0 0 14px 2px rgba(143,211,255,.7);z-index:5}
+.level.in-f::after{animation:scan-f calc(440ms * var(--k)) cubic-bezier(.7,0,.2,1) both}
+.level.in-b::after{animation:scan-b calc(440ms * var(--k)) cubic-bezier(.7,0,.2,1) both}
+.level.out-f{--dx:-14px;animation:dim calc(440ms * var(--k)) cubic-bezier(.7,0,.2,1) both}
+.level.out-b{--dx:14px;animation:dim calc(440ms * var(--k)) cubic-bezier(.7,0,.2,1) both}
+.tbtn{border-radius:2px}
+
+.meta,.s,.glabel,.kick,.back,.tbar,.lead-a,.tbl dl,.cap,.hint,.eyebrow{font-variant-numeric:tabular-nums slashed-zero;font-feature-settings:"zero" 1,"tnum" 1}
+.top h1{font-family:var(--f-disp)}
+.t{font-feature-settings:"tnum" 1}
+.lt{text-shadow:0 0 18px rgba(143,211,255,.18)}
+.kick{display:flex;gap:10px;align-items:center}
+.kick .clk{color:var(--ink)}
+.glabel>span:first-child::before{content:"[ ";color:var(--accent);opacity:.55}
+.glabel>span:first-child::after{content:" ]";color:var(--accent);opacity:.55}
+.gr{font:500 10px/14px var(--f-mono);letter-spacing:.16em;color:var(--accent)}
+.meta{letter-spacing:.04em}
+.lead-a{font-family:var(--f-mono)}
+.sec-h h2{font-family:var(--f-disp)}
+.tbtn{font-family:var(--f-mono)}
+.level.in-f::after,.level.in-b::after{content:none!important;display:none!important}
+
+.desk{--pad-x:14px;--pad-y:8px;--gap-lead:12px;--gap-trail:12px;--trail-in:8px;--icon:18px;--avatar:32px;--thumb-w:56px;--thumb-h:36px;--ti:14px;--h1:42px;--h2:58px;--t-s:14px;--t-lh:20px;--s-s:11px;--s-lh:16px;--m-s:11px;--m-lh:16px;--sub-in:30px}
+.desk .side{--pad-x:12px;--h1:36px;--icon:16px;--ti:12px;--t-s:13px;--gap-lead:10px;--sub-in:26px}
+.dstage{position:relative;background:var(--stage);padding:40px 24px 22px;overflow-x:auto;display:flex;flex-direction:column;align-items:center;gap:18px;border-radius:4px}
+.win{position:relative;flex:none;width:1040px;height:640px;background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden;display:grid;grid-template-columns:248px minmax(0,1fr);grid-template-rows:40px minmax(0,1fr);isolation:isolate;box-shadow:0 0 0 6px #0c0c0d,0 40px 80px -30px rgba(0,0,0,.9)}
+.tbar{grid-column:1/-1;display:flex;align-items:center;gap:6px;padding:0 16px;border-bottom:1px solid var(--line);position:relative;background:#0b0b0c}
+.tbar i{width:8px;height:8px;background:#26262a}
+.tbar b{margin-left:14px;font:500 10px/1 var(--f-mono);letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.tbar em{margin-left:auto;font:500 10px/1 var(--f-mono);letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-style:normal;display:flex;align-items:center;gap:8px}
+.tbar em::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent)}
+.side{border-right:1px solid var(--line);overflow-y:auto;padding:14px 8px 24px;scrollbar-width:none;background:linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px) 0 0/100% 24px,#0c0c0d}
+.side::-webkit-scrollbar{display:none}
+.side .grp{margin:0 0 16px}
+.side .glabel{padding:0 4px;margin-bottom:6px}
+.side .list{border-radius:3px}
+.side .has-nav .ti{display:none}
+.side .row.sel{background:rgba(143,211,255,.07)}
+.side .list>.item>.row.sel::after{content:"";position:absolute;left:0;top:8px;bottom:8px;width:2px;background:var(--accent);box-shadow:0 0 8px var(--accent);height:auto;right:auto}
+.side .row.sel .t{color:var(--accent)}
+.dmain{position:relative;min-width:0}
+.dmain .screen{position:absolute;inset:0}
+.desk .dmain{--bar-h:104px;--bar-px:28px}
+.desk .dmain .lt{font:400 24px/30px var(--f-disp)}
+.desk .dmain .grp{margin:0 16px 22px}
+.dstates{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:16px}
+.mstates{display:grid;gap:16px}
+.device.touch .row{cursor:default}
+.ana-box.desk .ana-in{min-width:420px}
+.study .panel{padding:6px}
+
+:root{--sig:#ff453a}
+.row::before{background:linear-gradient(var(--sig),var(--sig)) left top/8px 1px no-repeat,linear-gradient(var(--sig),var(--sig)) left top/1px 8px no-repeat,
+  linear-gradient(var(--sig),var(--sig)) right top/8px 1px no-repeat,linear-gradient(var(--sig),var(--sig)) right top/1px 8px no-repeat,
+  linear-gradient(var(--sig),var(--sig)) left bottom/8px 1px no-repeat,linear-gradient(var(--sig),var(--sig)) left bottom/1px 8px no-repeat,
+  linear-gradient(var(--sig),var(--sig)) right bottom/8px 1px no-repeat,linear-gradient(var(--sig),var(--sig)) right bottom/1px 8px no-repeat}
+.row:is(.is-hover,.s-hover) .ti{color:var(--sig)}
+.row:is(.is-press,.s-press){background:rgba(255,69,58,.1)}
+.row:is(.is-press,.s-press) .t{color:var(--sig)}
+.fx::before{background:linear-gradient(90deg,transparent,rgba(255,69,58,.14),transparent)}
+.fx::after{background:linear-gradient(transparent,rgba(255,69,58,.6),transparent)}
+.side .row.sel{background:rgba(255,69,58,.08)}
+.side .list>.item>.row.sel::after{background:var(--sig);box-shadow:0 0 8px var(--sig)}
+.side .row.sel .t{color:var(--sig)}
+.tbar em::before{background:var(--sig);box-shadow:0 0 8px var(--sig)}
+.kick{color:var(--sig)}
+.glabel>span:first-child::before,.glabel>span:first-child::after{color:var(--sig);opacity:.8}
+.lt{text-shadow:none}
+
+</style>
+
+<main class="wrap">
+  <header class="top">
+    <div>
+      <p class="eyebrow">Advanced Interface · Week 5 · Lists · Set 02 · Futuristic</p>
+      <h1>Telemetry</h1>
+    </div>
+    <div class="tools"><button class="tbtn" id="slow" type="button" aria-pressed="false">Slow motion 0.25×</button></div>
+  </header>
+
+  <section class="sec" aria-labelledby="h-desk">
+    <div class="sec-h"><h2 id="h-desk">Desktop</h2><span>Pointer · hover, press, expand, navigate</span></div>
+    <div class="dstage">
+      <div class="win desk" role="application" aria-label="Station systems console, desktop">
+        <div class="tbar" aria-hidden="true"><i></i><i></i><i></i><b>VESTA-2 // Mission console</b><em>Link · 600 Mb/s</em></div>
+        <nav class="side" id="side" aria-label="Console sections"></nav>
+        <div class="dmain"><div class="screen" id="dscreen"></div></div>
+      </div>
+      <p class="hint">Hover a row · sidebar sections and › rows open in the main pane · ⌄ rows expand · Esc goes back</p>
+    </div>
+    <div class="dstates desk" id="dstates" aria-label="Desktop states"></div>
+  </section>
+
+  <section class="sec" aria-labelledby="h-hov">
+    <div class="sec-h"><h2 id="h-hov">Hover</h2><span>Desktop only · 4 behaviours · try each one</span></div>
+    <div class="study desk" id="study"></div>
+  </section>
+
+  <section class="sec" aria-labelledby="h-mob">
+    <div class="sec-h"><h2 id="h-mob">Mobile</h2><span>Touch · no hover · press, expand, navigate</span></div>
+    <div class="demo">
+      <div class="stage">
+        <div class="device touch"><div class="screen" id="screen"></div></div>
+        <p class="hint">Touch has no hover · pressing locks the brackets and floods the row · › goes deeper · ⌄ expands</p>
+      </div>
+      <div class="mstates" id="states" aria-label="Mobile states"></div>
+    </div>
+  </section>
+
+  <section class="sec" aria-labelledby="h-sys">
+    <div class="sec-h"><h2 id="h-sys">System</h2><span>One structure · leading slot × lines × trailing</span></div>
+    <div class="sys" id="sys"></div>
+  </section>
+  <section class="sec" aria-labelledby="h-spec">
+    <div class="sec-h"><h2 id="h-spec">Spec</h2><span>Redlines measured from the live component</span></div>
+    <div class="spec">
+      <div class="anas" id="anas"></div>
+      <div class="tables"><div class="tbl"><h3>Layout · mobile</h3><dl><dt>Row width</dt><dd>Fluid · 390 in prototype</dd><dt>Min height</dt><dd>1 line 48 · 2 lines 64</dd><dt>Padding</dt><dd>16 sides · 12 top/bottom</dd><dt>Leading gap</dt><dd>12</dd><dt>Trailing gap</dt><dd>12 · 8 between text and icon</dd><dt>Sub-item indent</dt><dd>32</dd><dt>Divider</dt><dd>1 · #26262A · full width</dd><dt>Container</dt><dd>1 border #26262A · radius 4 · 12 outside margin</dd><dt>Avatar corner cut</dt><dd>9 at top right</dd></dl></div><div class="tbl"><h3>Leading &amp; trailing</h3><dl><dt>Icon</dt><dd>20 × 20 · stroke 1.25</dd><dt>Avatar</dt><dd>36 × 36 · radius 0</dd><dt>Thumbnail</dt><dd>64 × 40 · radius 2</dd><dt>Trailing icon</dt><dd>16 × 16</dd></dl></div><div class="tbl"><h3>Type</h3><dl><dt>Title</dt><dd>Chakra Petch 500 · 15 / 20 · tracking +0.06em · caps</dd><dt>Supporting</dt><dd>JetBrains Mono 400 · 11 / 16 · tracking +0.02em</dd><dt>Trailing text</dt><dd>JetBrains Mono 500 · 12 / 16 · tracking +0.04em</dd><dt>Level title</dt><dd>Michroma 400 · 21 / 28 · +0.08em · caps</dd><dt>Group label</dt><dd>JetBrains Mono 500 · 10 / 14 · +0.16em · caps · [ ] in signal red 80%</dd><dt>Kicker</dt><dd>JetBrains Mono 500 · 10 / 14 · +0.16em · signal red + frost clock</dd></dl></div><div class="tbl"><h3>Colour</h3><dl><dt>Graphite</dt><dd><span class="sw" style="background:#0f0f10"></span>#0F0F10 · surface</dd><dt>Signal</dt><dd><span class="sw" style="background:#ff453a"></span>#FF453A · hover · press · selection · live</dd><dt>Ice</dt><dd><span class="sw" style="background:#8fd3ff"></span>#8FD3FF · icons · data</dd><dt>Amber</dt><dd><span class="sw" style="background:#ffb547"></span>#FFB547 · warnings</dd><dt>Frost</dt><dd><span class="sw" style="background:#ededee"></span>#EDEDEE · titles · values</dd><dt>Slate</dt><dd><span class="sw" style="background:#8a8a8f"></span>#8A8A8F · supporting</dd><dt>Seam</dt><dd><span class="sw" style="background:#26262a"></span>#26262A · borders · dividers</dd></dl></div><div class="tbl"><h3>States</h3><dl><dt>Enabled</dt><dd>Graphite row · ice icons · frost values</dd><dt>Hover</dt><dd>Four 8 × 1 signal-red brackets lock on (inset 3) · red sweep · red crosshair · value re-resolves</dd><dt>Pressed</dt><dd>Brackets close to inset 6 · signal fill 10% · title signal red</dd><dt>Expanded</dt><dd>Tree line draws down · ticks at 24 · items clip in from left</dd></dl></div><div class="tbl"><h3>Motion</h3><dl><dt>Lock-on</dt><dd>240 · cubic-bezier(.2,.9,.2,1.25)</dd><dt>Sweep</dt><dd>720 once per hover</dd><dt>Value</dt><dd>9 frames × 34</dd><dt>Expand</dt><dd>380 · items 440, stagger 60</dd><dt>Navigate</dt><dd>Wipe 440 · cubic-bezier(.7,0,.2,1) · clean edge · old level dims to 25%, drifts 14</dd></dl></div><div class="tbl"><h3>Layout · desktop</h3><dl><dt>Window</dt><dd>1040 × 640 · radius 8 · title bar 40 · 6 bezel</dd><dt>Sidebar</dt><dd>248 · rows 36 · padding 12 · icon 16 · 13 / 20</dd><dt>Selected</dt><dd>2 signal bar with 8 glow · fill signal 8% · title signal</dd><dt>Row</dt><dd>1 line 42 · 2 lines 58 · padding 14 sides, 8 top/bottom</dd><dt>Leading</dt><dd>Icon 18 · avatar 32 · thumbnail 56 × 36 · gap 12</dd><dt>Trailing</dt><dd>Icon 14 · gap 12 · 8 between text and icon</dd><dt>Title</dt><dd>Chakra Petch 500 · 14 / 20 · +0.06em · caps</dd><dt>Level title</dt><dd>Michroma 400 · 24 / 30 · +0.08em · caps</dd></dl></div><div class="tbl"><h3>Platform</h3><dl><dt>Desktop</dt><dd>Pointer: brackets lock on, scan sweeps, value re-resolves, crosshair tracks</dd><dt>Mobile</dt><dd>Touch: no hover · pressing closes the brackets and floods the row</dd><dt>Keyboard</dt><dd>Focus shows the lock-on · Enter presses · Esc goes back</dd></dl></div><div class="tbl"><h3>Readouts</h3><dl><dt>Numerals</dt><dd>JetBrains Mono · tabular · slashed zero</dd><dt>Labels</dt><dd>[ 01 // VEHICLE ] · mono 500 10 · +0.16em</dd><dt>Clock</dt><dd>Mission time T+hh:mm:ss in every kicker, 1 s tick</dd></dl></div></div>
+    </div>
+  </section>
+</main>
+<script>window.ICONS={"chev_r": "<path d=\"M9 5.5l6.5 6.5L9 18.5\"/>", "chev_d": "<path d=\"M5.5 9l6.5 6.5L18.5 9\"/>", "chev_l": "<path d=\"M15 5.5L8.5 12l6.5 6.5\"/>", "plus": "<path class=\"ph\" d=\"M5 12h14\"/><path class=\"pv\" d=\"M12 5v14\"/>", "arrow": "<path class=\"shaft\" d=\"M20 12H3\"/><path d=\"M14.5 6.5L20 12l-5.5 5.5\"/>", "arrow_l": "<path class=\"shaft\" d=\"M4 12h17\"/><path d=\"M9.5 6.5L4 12l5.5 5.5\"/>", "arrow_d": "<path d=\"M12 3v18\"/><path d=\"M5 14l7 7 7-7\"/>", "arrow_ur": "<path d=\"M7 17L17 7\"/><path d=\"M8 7h9v9\"/>", "user": "<circle cx=\"12\" cy=\"8\" r=\"4\"/><path d=\"M4 20.5c1.4-4 4.4-6 8-6s6.6 2 8 6\"/>", "disc": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><circle cx=\"12\" cy=\"12\" r=\"2.5\"/>", "music": "<path d=\"M9 18V5.5l11-2.5v13\"/><circle cx=\"6\" cy=\"18\" r=\"3\"/><circle cx=\"17\" cy=\"16\" r=\"3\"/>", "download": "<path d=\"M12 3.5v11.5\"/><path d=\"M7 10.5l5 5 5-5\"/><path d=\"M4.5 20h15\"/>", "list": "<path d=\"M9 6h11M9 12h11M9 18h11\"/><path d=\"M4.5 6h.01M4.5 12h.01M4.5 18h.01\"/>", "clock": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 7v5l3.2 2\"/>", "heart": "<path d=\"M12 20s-7.5-4.6-7.5-10.4A4.1 4.1 0 0 1 12 7.2a4.1 4.1 0 0 1 7.5 2.4C19.5 15.4 12 20 12 20z\"/>", "mic": "<rect x=\"9\" y=\"3\" width=\"6\" height=\"11\" rx=\"3\"/><path d=\"M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21\"/>", "calendar": "<rect x=\"3.5\" y=\"5\" width=\"17\" height=\"15.5\" rx=\"2\"/><path d=\"M3.5 10h17M8 3v4M16 3v4\"/>", "pin": "<path d=\"M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z\"/><circle cx=\"12\" cy=\"9.5\" r=\"2.5\"/>", "ticket": "<path d=\"M3.5 7h17v3.2a1.9 1.9 0 0 0 0 3.6V17h-17v-3.2a1.9 1.9 0 0 0 0-3.6z\"/><path d=\"M14.5 7.5v2M14.5 11v2M14.5 14.5v2\"/>", "battery": "<rect x=\"2.5\" y=\"7\" width=\"17\" height=\"10\" rx=\"2\"/><path d=\"M22 10.5v3M6 10v4M9.5 10v4M13 10v4\"/>", "thermo": "<path d=\"M10 14.2V5a2 2 0 0 1 4 0v9.2a4 4 0 1 1-4 0z\"/><path d=\"M12 9v7\"/>", "signal": "<path d=\"M4 20v-3M9 20v-7M14 20V9M19 20V4\"/>", "orbit": "<circle cx=\"12\" cy=\"12\" r=\"2.6\"/><ellipse cx=\"12\" cy=\"12\" rx=\"10\" ry=\"4.2\" transform=\"rotate(-28 12 12)\"/>", "camera": "<path d=\"M3.5 8h3.5l2-3h6l2 3h3.5v11.5h-17z\"/><circle cx=\"12\" cy=\"13.2\" r=\"3.6\"/>", "card": "<rect x=\"2.5\" y=\"5.5\" width=\"19\" height=\"13\" rx=\"2\"/><path d=\"M2.5 10h19M6.5 15h4\"/>", "coffee": "<path d=\"M4.5 9h12v5a5 5 0 0 1-5 5h-2a5 5 0 0 1-5-5z\"/><path d=\"M16.5 10.5h1.5a2.5 2.5 0 0 1 0 5h-1.5M8.5 3.5v2.5M12.5 3.5v2.5\"/>", "receipt": "<path d=\"M6 3h12v18l-3-2-3 2-3-2-3 2z\"/><path d=\"M9 8h6M9 12h6\"/>", "feather": "<path d=\"M4 20l3.8-1L19 7.8a2.2 2.2 0 0 0-3.1-3.1L4.9 15.8z\"/><path d=\"M13.5 7l3 3\"/>", "image": "<rect x=\"3\" y=\"4.5\" width=\"18\" height=\"15\" rx=\"2\"/><circle cx=\"8.5\" cy=\"9.5\" r=\"1.6\"/><path d=\"M21 15.5l-5-5-9 9\"/>", "moon": "<path d=\"M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z\"/>", "sun": "<circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4\"/>", "cloud": "<path d=\"M7 18.5h10.2a4 4 0 0 0 .4-8 6 6 0 0 0-11.5 1.3A3.4 3.4 0 0 0 7 18.5z\"/>", "wave": "<path d=\"M3 12h1.5M7 8.5v7M10.5 5v14M14 9v6M17.5 7v10M21 11v2\"/>", "gem": "<path d=\"M6.5 4h11l3.5 5-9 11L3 9z\"/><path d=\"M3 9h18M9.5 4L8 9l4 11 4-11-1.5-5\"/>", "shield": "<path d=\"M12 3l7.5 3v5.5c0 4.8-3.3 8.2-7.5 9.5-4.2-1.3-7.5-4.7-7.5-9.5V6z\"/><path d=\"M9 12l2.2 2.2L15.5 10\"/>", "phone": "<path d=\"M5 3.5h3.5l2 5L8 10a11 11 0 0 0 6 6l1.5-2.5 5 2V19a2 2 0 0 1-2 2A16.5 16.5 0 0 1 3 5.5a2 2 0 0 1 2-2z\"/>", "box": "<path d=\"M3 7.2L12 3l9 4.2v9.6L12 21l-9-4.2z\"/><path d=\"M3 7.2l9 4.2 9-4.2M12 11.4V21\"/>", "printer": "<path d=\"M7 9V3.5h10V9\"/><rect x=\"3\" y=\"9\" width=\"18\" height=\"8\" rx=\"1.5\"/><path d=\"M7 14h10v6.5H7z\"/>", "archive": "<rect x=\"3\" y=\"4\" width=\"18\" height=\"5\" rx=\"1\"/><path d=\"M5 9v11h14V9M10 13h4\"/>", "building": "<path d=\"M4 21V7.5L12 3l8 4.5V21\"/><path d=\"M9.5 21v-5h5v5M8.5 10.5h.01M12 10.5h.01M15.5 10.5h.01\"/><path d=\"M2.5 21h19\"/>", "columns": "<path d=\"M3 21h18M4 9h16M12 3l9 5.5H3z\"/><path d=\"M6 9v10.5M10 9v10.5M14 9v10.5M18 9v10.5\"/>", "book": "<path d=\"M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5z\"/><path d=\"M5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3\"/>", "eye": "<path d=\"M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>", "sparkle": "<path d=\"M12 3l1.8 5.4L19 10l-5.2 1.7L12 17l-1.8-5.3L5 10l5.2-1.6z\"/><path d=\"M18.5 16v4M16.5 18h4\"/>", "lock": "<rect x=\"5\" y=\"10.5\" width=\"14\" height=\"10\" rx=\"2\"/><path d=\"M8 10.5V7.5a4 4 0 0 1 8 0v3\"/>", "mail": "<rect x=\"3\" y=\"5\" width=\"18\" height=\"14\" rx=\"2\"/><path d=\"M3.5 6.5l8.5 6.5 8.5-6.5\"/>", "leaf": "<path d=\"M5 19C5 10.5 10.5 5 20 4c-1 9.5-6.5 15-15 15z\"/><path d=\"M5 19l7.5-7.5\"/>", "compass": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M15.5 8.5l-2 5-5 2 2-5z\"/>", "check": "<path d=\"M5 12.5l4.5 4.5L19 7.5\"/>", "dots": "<path d=\"M5.5 12h.01M12 12h.01M18.5 12h.01\"/>", "globe": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M3 12h18M12 3c3 3.4 3 14.6 0 18M12 3c-3 3.4-3 14.6 0 18\"/>", "bell": "<path d=\"M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 1.5h-15z\"/><path d=\"M10 20.5a2 2 0 0 0 4 0\"/>", "tag": "<path d=\"M3.5 12V4.5H11l9.5 9.5-7.5 7.5z\"/><circle cx=\"7.5\" cy=\"8.5\" r=\"1.3\"/>", "scissors": "<circle cx=\"6\" cy=\"6.5\" r=\"2.5\"/><circle cx=\"6\" cy=\"17.5\" r=\"2.5\"/><path d=\"M8 8l12 10M8 16L20 6\"/>", "stack": "<path d=\"M12 3l9 5-9 5-9-5z\"/><path d=\"M3 12.5l9 5 9-5M3 17l9 5 9-5\"/>"};window.SET={"root": "sys", "deskRoot": "overview", "levels": {"sys": {"title": "Systems", "short": "SYS", "groups": [{"label": "01 // Vehicle", "right": "NOMINAL", "items": [{"title": "Power", "sub": "Array A + B · 4 strings", "left": ["i", "battery"], "meta": "98.2%", "nav": "power"}, {"title": "Thermal", "left": ["i", "thermo"], "meta": "4 SENSORS", "kids": [{"title": "Radiator A", "meta": "−41.6 °C"}, {"title": "Radiator B", "meta": "−39.0 °C"}, {"title": "Cabin", "meta": "21.4 °C"}, {"title": "Battery bay", "meta": "28.9 °C", "mt": "warn"}]}, {"title": "Comms", "left": ["i", "signal"], "meta": "LINK", "nav": "comms"}, {"title": "Orbit", "sub": "Alt 412.6 km · Inc 51.6°", "left": ["i", "orbit"], "nav": "orbit"}]}, {"label": "02 // Crew", "right": "2 / 3 AWAKE", "items": [{"title": "Ana Kovač", "sub": "Commander · EVA certified", "left": ["a", "AK", 1], "meta": "ON SHIFT", "nav": "crew"}, {"title": "Tomás Reyes", "sub": "Flight engineer", "left": ["a", "TR", 2], "meta": "REST", "nav": "crew"}]}, {"label": "03 // Feeds", "items": [{"title": "Nadir camera", "sub": "Over the South Atlantic", "left": ["t", 1], "meta": "LIVE", "nav": "feed", "mt": "live"}, {"title": "Event log", "meta": "128", "nav": "log"}]}]}, "power": {"title": "Power", "short": "PWR", "groups": [{"label": "01 // Generation", "items": [{"title": "Array A", "sub": "Sun-tracking · 0.4° error", "left": ["t", 3], "meta": "4.81 kW"}, {"title": "Array B", "sub": "Sun-tracking · 0.6° error", "left": ["t", 3], "meta": "4.66 kW"}]}, {"label": "02 // Bus", "items": [{"title": "Voltage", "meta": "120.4 V"}, {"title": "Load", "meta": "3.42 kW"}, {"title": "Battery", "meta": "98.2%", "nav": "cells"}]}]}, "cells": {"title": "Battery cells", "short": "BATT", "groups": [{"items": [{"title": "Cell group 1", "meta": "3.92 V"}, {"title": "Cell group 2", "meta": "3.91 V"}, {"title": "Cell group 3", "meta": "3.88 V", "mt": "warn"}, {"title": "Cell group 4", "meta": "3.92 V"}]}]}, "comms": {"title": "Comms", "short": "COMMS", "groups": [{"items": [{"title": "Ka-band downlink", "meta": "600 Mb/s"}, {"title": "S-band", "meta": "2 Mb/s"}, {"title": "Next ground pass", "sub": "Svalbard station", "meta": "T−06:12"}]}]}, "orbit": {"title": "Orbit", "short": "ORBIT", "groups": [{"items": [{"title": "Altitude", "meta": "412.6 km"}, {"title": "Inclination", "meta": "51.6°"}, {"title": "Period", "meta": "92.7 min"}, {"title": "Next reboost", "meta": "Day 214"}]}]}, "crew": {"title": "Crew", "short": "CREW", "groups": [{"items": [{"title": "Ana Kovač", "sub": "Heart 64 bpm · SpO₂ 98%", "left": ["a", "AK", 1], "meta": "ON SHIFT"}, {"title": "Tomás Reyes", "sub": "Asleep · 5 h 12 min", "left": ["a", "TR", 2], "meta": "REST"}, {"title": "Lin Okada", "sub": "Lab module", "left": ["a", "LO", 1], "meta": "ON SHIFT"}]}]}, "feed": {"title": "Nadir camera", "short": "CAM", "groups": [{"items": [{"title": "Resolution", "meta": "4K · 30 fps"}, {"title": "Ground track", "meta": "−34.2°, −18.9°"}, {"title": "Recording", "meta": "ON", "mt": "live"}]}]}, "log": {"title": "Event log", "short": "LOG", "groups": [{"items": [{"title": "Thermal: bay above 28 °C", "sub": "06:41:09 UTC", "meta": "WARN", "mt": "warn"}, {"title": "Ground pass complete", "sub": "06:12:44 UTC", "meta": "INFO"}, {"title": "Crew sleep period started", "sub": "04:00:00 UTC", "meta": "INFO"}]}]}, "overview": {"title": "Overview", "short": "OVERVIEW", "groups": [{"label": "01 // Alerts", "right": "2 OPEN", "items": [{"title": "Battery bay above 28 °C", "sub": "Thermal · 06:41:09 UTC", "left": ["i", "thermo"], "meta": "WARN", "nav": "log", "mt": "warn"}, {"title": "Cell group 3 low", "sub": "Power · 3.88 V", "left": ["i", "battery"], "meta": "WARN", "nav": "cells", "mt": "warn"}]}, {"label": "02 // Next", "items": [{"title": "Ground pass", "sub": "Svalbard station · Ka-band", "left": ["i", "signal"], "meta": "T−06:12", "nav": "comms"}, {"title": "Reboost burn", "sub": "Δv 1.8 m/s · 46 s", "left": ["i", "orbit"], "meta": "DAY 214", "nav": "orbit"}, {"title": "Downlink queue", "left": ["i", "download"], "meta": "3", "kids": [{"title": "Nadir video · 4K", "meta": "18.2 GB"}, {"title": "Telemetry dump", "meta": "0.6 GB"}, {"title": "Crew mail", "meta": "0.1 GB"}]}]}, {"label": "03 // Feeds", "items": [{"title": "Nadir camera", "sub": "Over the South Atlantic", "left": ["t", 1], "meta": "LIVE", "nav": "feed", "mt": "live"}]}]}}, "side": [{"label": "00 // Console", "items": [{"title": "Overview", "left": ["i", "compass"], "nav": "overview"}]}, {"label": "01 // Vehicle", "right": "NOMINAL", "items": [{"title": "Power", "left": ["i", "battery"], "meta": "98.2%", "nav": "power"}, {"title": "Thermal", "left": ["i", "thermo"], "meta": "4", "kids": [{"title": "Radiator A", "meta": "−41.6"}, {"title": "Radiator B", "meta": "−39.0"}, {"title": "Battery bay", "meta": "28.9", "mt": "warn"}]}, {"title": "Comms", "left": ["i", "signal"], "meta": "LINK", "nav": "comms"}, {"title": "Orbit", "left": ["i", "orbit"], "nav": "orbit"}]}, {"label": "02 // Crew", "items": [{"title": "Crew", "left": ["i", "user"], "meta": "2/3", "nav": "crew"}]}, {"label": "03 // Feeds", "items": [{"title": "Nadir camera", "left": ["i", "camera"], "nav": "feed"}, {"title": "Event log", "left": ["i", "list"], "meta": "128", "nav": "log"}]}], "stateItem": {"title": "Power", "sub": "Array A + B · 4 strings", "left": ["i", "battery"], "meta": "98.2%", "nav": "x"}, "expandItem": {"title": "Thermal", "left": ["i", "thermo"], "meta": "4 SENSORS", "kids": [{"title": "Radiator A", "meta": "−41.6 °C"}, {"title": "Radiator B", "meta": "−39.0 °C"}, {"title": "Cabin", "meta": "21.4 °C"}]}, "system": [{"title": "Event log", "ri": "chev_r"}, {"title": "Comms", "left": ["i", "signal"], "meta": "LINK", "ri": "chev_r"}, {"title": "Ana Kovač", "left": ["a", "AK", 1], "meta": "ON SHIFT"}, {"title": "Array A", "left": ["t", 3], "ri": "chev_r"}, {"title": "Next ground pass", "sub": "Svalbard station", "meta": "T−06:12"}, {"title": "Orbit", "sub": "Alt 412.6 km · Inc 51.6°", "left": ["i", "orbit"], "ri": "chev_r"}, {"title": "Tomás Reyes", "sub": "Flight engineer", "left": ["a", "TR", 2], "meta": "REST", "ri": "chev_r"}, {"title": "Nadir camera", "sub": "Over the South Atlantic", "left": ["t", 1], "meta": "LIVE", "mt": "live"}, {"title": "Aurora camera", "sub": "Limb view · north", "left": ["t", 2], "ri": "chev_r"}], "anatomy": [["Mobile · one line · icon · text + icon", {"title": "Comms", "left": ["i", "signal"], "meta": "LINK", "ri": "chev_r"}, false], ["Mobile · two lines · thumbnail · text", {"title": "Nadir camera", "sub": "Over the South Atlantic", "left": ["t", 1], "meta": "LIVE", "ri": "chev_r"}, false], ["Desktop · one line · icon · text + icon", {"title": "Comms", "left": ["i", "signal"], "meta": "LINK", "ri": "chev_r"}, true], ["Desktop · two lines · thumbnail · text + icon", {"title": "Nadir camera", "sub": "Over the South Atlantic", "left": ["t", 1], "meta": "LIVE", "ri": "chev_r"}, true]], "study": [["Lock-on", "Hover a row. Four brackets snap onto it from 3 px outside and a soft band of light sweeps across once.", [{"title": "Power", "sub": "Array A + B · 4 strings", "left": ["i", "battery"], "meta": "98.2%", "nav": "x"}, {"title": "Comms", "left": ["i", "signal"], "meta": "LINK", "nav": "x"}, {"title": "Orbit", "sub": "Alt 412.6 km · Inc 51.6°", "left": ["i", "orbit"], "nav": "x"}]], ["Readout", "Hover a row with a value. The value re-resolves character by character, like a fresh reading.", [{"title": "Next ground pass", "sub": "Svalbard station", "meta": "T−06:12", "nav": "x"}, {"title": "Battery bay", "left": ["i", "thermo"], "meta": "28.9 °C", "nav": "x", "mt": "warn"}]], ["Crosshair", "Move the pointer sideways inside a row. A thin ice line tracks it.", [{"title": "Ana Kovač", "sub": "Commander · EVA certified", "left": ["a", "AK", 1], "meta": "ON SHIFT", "nav": "x"}, {"title": "Nadir camera", "sub": "Over the South Atlantic", "left": ["t", 1], "meta": "LIVE", "nav": "x", "mt": "live"}]], ["Pressed", "Hold the button down. The brackets close to 6 px inside and the row floods ice-blue.", [{"title": "Event log", "meta": "128", "nav": "x"}, {"title": "Thermal", "left": ["i", "thermo"], "meta": "4 SENSORS", "kids": [{"title": "Cabin"}]}]]], "kicker": "VESTA-2 // DAY 213", "touchPress": true, "navIcon": "chev_r", "expIcon": "chev_d", "cap": "square", "join": "miter"};</script>
+<script>
+
+(() => {
+  const G = '0123456789ABCDEF#%/<>';
+  function scramble(row) {
+    const m = row.querySelector(':scope > .trail .meta'); if (!m || LIST.reduce) return;
+    const o = m.dataset.o || (m.dataset.o = m.textContent);
+    clearInterval(m._t); let f = 0; const N = 9;
+    m._t = setInterval(() => {
+      f++; const keep = Math.floor(o.length * f / N);
+      m.textContent = o.split('').map((c, i) => i < keep || c === ' ' || c === '.' ? c : G[(Math.random() * G.length) | 0]).join('');
+      if (f >= N) { clearInterval(m._t); m.textContent = o; }
+    }, 34 * LIST.S.k);
+  }
+  document.addEventListener('rowhover', e => scramble(e.target));
+  const deco = root => root.querySelectorAll && root.querySelectorAll('.row').forEach(r => { if (!r.querySelector(':scope > .fx')) r.insertAdjacentHTML('afterbegin', '<span class="fx" aria-hidden="true"></span>'); });
+  new MutationObserver(ms => ms.forEach(m => m.addedNodes.forEach(n => n.nodeType === 1 && deco(n.parentElement || n)))).observe(document.body, { childList: true, subtree: true });
+  addEventListener('DOMContentLoaded', () => deco(document));
+  // crosshair follows the pointer inside the hovered row
+  document.addEventListener('pointermove', e => { if (e.pointerType === 'touch') return; const r = e.target.closest && e.target.closest('.row.is-hover'); if (!r) return; const b = r.getBoundingClientRect(); r.style.setProperty('--mx', Math.round(e.clientX - b.left) + 'px'); }, { passive: true });
+  // mission clock in every level kicker
+  let T = 6 * 3600 + 41 * 60 + 9;
+  const tick = () => { const p = n => String(n).padStart(2, '0'); const s = `T+${p((T / 3600) | 0)}:${p(((T / 60) | 0) % 60)}:${p(T % 60)}`;
+    document.querySelectorAll('.kick').forEach(k => { let c = k.querySelector('.clk'); if (!c) { k.insertAdjacentHTML('beforeend', '<span class="clk"></span>'); c = k.lastChild; } c.textContent = '// ' + s; }); };
+  setInterval(() => { T++; tick(); }, 1000);
+  function cssT({ from, to, dir, k }) {
+    return new Promise(res => {
+      const a = dir > 0 ? 'f' : 'b'; to.classList.add('in-' + a); from.classList.add('out-' + a);
+      let done = false; const fin = () => { if (done) return; done = true; to.classList.remove('in-' + a); from.classList.remove('out-' + a); res(); };
+      requestAnimationFrame(() => { tick();
+        const an = [...to.getAnimations({ subtree: true }), ...from.getAnimations({ subtree: true })].filter(x => x.effect && x.effect.getTiming().iterations !== Infinity && x.animationName);
+        if (!an.length) return fin(); Promise.all(an.map(x => x.finished.catch(() => 0))).then(fin); });
+      setTimeout(fin, 4000 * k);
+    });
+  }
+  SET.hooks = { transition: cssT, init() { deco(document); tick(); } };
+})();
+
+</script>
+<script>
+(() => {
+  const SET = window.SET, ICONS = window.ICONS, H = () => SET.hooks || {};
+  const root = document.documentElement;
+  const S = { k: 1 };
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const icon = (n, cls = '') => `<svg class="ic ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="${SET.cap || 'round'}" stroke-linejoin="${SET.join || 'round'}" aria-hidden="true">${ICONS[n] || ''}</svg>`;
+  const emit = (el, name, detail) => el.dispatchEvent(new CustomEvent(name, { bubbles: true, detail }));
+  const ROW = '.row[data-nav],.row[data-exp],.row[data-demo]';
+  let uid = 0;
+
+  /* ---------- markup ---------- */
+  function lead(L) {
+    if (!L) return '';
+    const [k, v, n] = L;
+    if (k === 'i') return `<span class="lead lead-i">${icon(v)}</span>`;
+    if (k === 'a') return `<span class="lead lead-a av${n || 1}"><span>${esc(v)}</span></span>`;
+    return `<span class="lead lead-t"><span class="th th${v}"></span></span>`;
+  }
+  function rowHTML(it, o, id) {
+    const act = o.demo ? 'demo' : it.nav ? 'nav' : it.kids ? 'exp' : '';
+    const tag = act && !o.still ? 'button' : 'div';
+    const ti = it.ri || (it.nav ? SET.navIcon || 'chev_r' : it.kids ? SET.expIcon || 'plus' : null);
+    let a = '';
+    if (!o.still) {
+      if (act === 'nav') a = ` data-nav="${it.nav}"`;
+      else if (act === 'exp') a = ` data-exp aria-expanded="${o.open ? 'true' : 'false'}" aria-controls="k${id}"`;
+      else if (act === 'demo') a = ' data-demo';
+    }
+    const cls = ['row', it.left ? 'L-' + it.left[0] : 'L-n', it.sub ? 'two' : '', it.kids ? 'has-kids' : '', it.nav ? 'has-nav' : '', o.force || ''].filter(Boolean).join(' ');
+    return `<${tag} class="${cls}"${tag === 'button' ? ' type="button"' : ''}${a}>` + lead(it.left) +
+      `<span class="body"><span class="t"><span class="tt">${esc(it.title)}</span></span>${it.sub ? `<span class="s">${esc(it.sub)}</span>` : ''}</span>` +
+      (it.meta || ti ? `<span class="trail">${it.meta ? `<span class="meta${it.mt ? ' mt-' + it.mt : ''}">${esc(it.meta)}</span>` : ''}${ti ? `<span class="ti">${icon(ti, 'ti-' + ti)}</span>` : ''}</span>` : '') +
+      `</${tag}>`;
+  }
+  function itemHTML(it, i, o) {
+    const id = ++uid;
+    let h = `<li class="item${o.open && it.kids ? ' open' : ''}" style="--i:${i}">${rowHTML(it, o, id)}`;
+    if (it.kids) {
+      const ko = Object.assign({}, o, { force: '', open: false });
+      h += `<div class="kids" id="k${id}"><div class="kin"><ul class="list sub">${it.kids.map((k, j) => itemHTML(k, j, ko)).join('')}</ul></div></div>`;
+    }
+    return h + '</li>';
+  }
+  const listHTML = (items, o = {}) => `<ul class="list">${items.map((it, i) => itemHTML(it, i, o)).join('')}</ul>`;
+
+  /* ---------- navigation: one stack per screen ---------- */
+  let busy = false;
+  class Nav {
+    constructor(screen, rootKey) { this.screen = screen; this.stack = []; this.stage = screen.closest('.win') || screen.closest('.device') || screen; this.mount(rootKey); }
+    levelEl(key, depth) {
+      const L = SET.levels[key], el = document.createElement('section');
+      el.className = 'level'; el.dataset.key = key;
+      const prev = depth ? SET.levels[this.stack[depth - 1].key] : null;
+      el.innerHTML =
+        `<header class="bar">${prev ? `<button class="back" type="button">${icon('chev_l')}<span>${esc(prev.short || prev.title)}</span></button>` : '<span class="back-sp"></span>'}` +
+        `${L.kicker || SET.kicker ? `<p class="kick">${esc(L.kicker || SET.kicker)}</p>` : ''}<h3 class="lt">${esc(L.title)}</h3></header>` +
+        `<div class="scroll">${L.groups.map(g => `<div class="grp">${g.label ? `<p class="glabel"><span>${esc(g.label)}</span>${g.right ? `<span class="gr">${esc(g.right)}</span>` : ''}</p>` : ''}${listHTML(g.items)}</div>`).join('')}</div>`;
+      return el;
+    }
+    mount(key) { const el = this.levelEl(key, 0); this.stack.push({ key, el }); this.screen.appendChild(el); }
+    top() { return this.stack[this.stack.length - 1]; }
+    async run(from, to, dir, originRow) {
+      const T = H().transition;
+      await T({ screen: this.screen, stage: this.stage, from, to, dir, originRow, k: S.k });
+    }
+    async go(dir, key, originRow, kb) {
+      if (busy) return; busy = true; setHover(null);
+      const from = this.top();
+      let to;
+      if (dir > 0) { to = { key, el: this.levelEl(key, this.stack.length), originRow }; this.stack.push(to); this.screen.appendChild(to.el); }
+      else { this.stack.pop(); to = this.top(); to.el.classList.remove('parked'); to.el.removeAttribute('inert'); this.screen.appendChild(from.el); }
+      await this.run(from.el, to.el, dir, dir > 0 ? originRow : from.originRow);
+      if (dir > 0) { from.el.classList.add('parked'); from.el.setAttribute('inert', ''); } else from.el.remove();
+      busy = false;
+      if (kb) { const f = dir > 0 ? to.el.querySelector('.back') : from.originRow; f && f.isConnected && f.focus({ preventScroll: true }); }
+    }
+    async reset(key, originRow) {
+      if (busy) return;
+      if (this.stack.length === 1 && this.top().key === key) return;
+      busy = true; setHover(null);
+      const old = this.stack.splice(0), from = old[old.length - 1];
+      const to = { key, el: this.levelEl(key, 0) }; this.stack.push(to); this.screen.appendChild(to.el);
+      await this.run(from.el, to.el, 1, originRow);
+      old.forEach(l => l.el.remove());
+      busy = false;
+    }
+  }
+  const navs = [];
+  const mob = document.getElementById('screen'); if (mob) navs.push(new Nav(mob, SET.root));
+  const desk = document.getElementById('dscreen'); const dnav = desk ? new Nav(desk, SET.deskRoot) : null; if (dnav) navs.push(dnav);
+  const navOf = el => navs.find(n => n.screen.contains(el));
+
+  /* ---------- desktop sidebar ---------- */
+  const side = document.getElementById('side');
+  if (side) {
+    side.innerHTML = SET.side.map(g => `<div class="grp">${g.label ? `<p class="glabel"><span>${esc(g.label)}</span>${g.right ? `<span class="gr">${esc(g.right)}</span>` : ''}</p>` : ''}${listHTML(g.items)}</div>`).join('');
+    const first = side.querySelector(`.row[data-nav="${SET.deskRoot}"]`); if (first) { first.classList.add('sel'); first.setAttribute('aria-current', 'page'); }
+  }
+  function select(row) { side.querySelectorAll('.row.sel').forEach(r => { r.classList.remove('sel'); r.removeAttribute('aria-current'); }); row.classList.add('sel'); row.setAttribute('aria-current', 'page'); }
+
+  /* ---------- hover / press ---------- */
+  let hov = null, prs = null;
+  const P = { x: 0, y: 0 };
+  function setHover(r) {
+    if (hov === r) return;
+    if (hov) { hov.classList.remove('is-hover'); emit(hov, 'rowleave'); }
+    hov = r;
+    if (r) { r.classList.add('is-hover'); emit(r, 'rowhover'); }
+  }
+  const touchy = el => !!(el && el.closest && el.closest('.touch'));
+  document.addEventListener('pointerover', e => {
+    P.x = e.clientX; P.y = e.clientY;
+    if (e.pointerType === 'touch' || touchy(e.target)) { setHover(null); return; }
+    const r = e.target.closest(ROW);
+    setHover(r && !busy ? r : null);
+  });
+  document.addEventListener('pointermove', e => { P.x = e.clientX; P.y = e.clientY; }, { passive: true });
+  document.addEventListener('pointerout', e => { if (!e.relatedTarget) setHover(null); });
+  document.addEventListener('pointerdown', e => {
+    const r = e.target.closest(ROW); if (!r || busy || e.button > 0) return;
+    P.x = e.clientX; P.y = e.clientY;
+    prs = r; r.classList.add('is-press'); emit(r, 'rowpress', { touch: e.pointerType === 'touch' || touchy(r) });
+  });
+  const release = () => { if (prs) { const r = prs; prs = null; r.classList.remove('is-press'); emit(r, 'rowrelease', { touch: touchy(r) }); } };
+  addEventListener('pointerup', release); addEventListener('pointercancel', release);
+  document.addEventListener('pointerout', e => { if (prs && e.target.closest(ROW) === prs && !prs.contains(e.relatedTarget)) release(); });
+  document.addEventListener('keydown', e => {
+    const r = e.target.closest && e.target.closest(ROW);
+    if (r && !e.repeat && (e.key === 'Enter' || e.key === ' ')) { prs = r; r.classList.add('is-press'); emit(r, 'rowpress', { touch: touchy(r) }); setTimeout(release, 140 * S.k); }
+    if (e.key === 'Escape' && !busy) { const n = navOf(document.activeElement); if (n && n.stack.length > 1) n.go(-1, null, null, true); }
+  });
+  document.addEventListener('focusin', e => { const r = e.target.closest && e.target.closest(ROW); if (r && !touchy(r) && r.matches(':focus-visible')) setHover(r); });
+  document.addEventListener('focusout', e => { if (hov && e.target === hov) setHover(null); });
+
+  document.addEventListener('click', e => {
+    if (busy) return;
+    const kb = e.detail === 0;
+    const b = e.target.closest('.back');
+    if (b) { const n = navOf(b); if (n && b.closest('.level') === n.top().el) n.go(-1, null, null, kb); return; }
+    const r = e.target.closest('.row'); if (!r) return;
+    if (r.dataset.nav && side && side.contains(r)) { select(r); dnav.reset(r.dataset.nav, r); return; }
+    const n = r.dataset.nav && navOf(r);
+    if (n) n.go(1, r.dataset.nav, r, kb);
+    else if (r.hasAttribute('data-exp')) {
+      const it = r.parentElement, open = !it.classList.contains('open');
+      it.classList.toggle('open', open); r.setAttribute('aria-expanded', open);
+      emit(r, open ? 'rowopen' : 'rowclose');
+    }
+  });
+
+  /* ---------- states / study / system / anatomy ---------- */
+  function fillStates(id, cells) {
+    const host = document.getElementById(id); if (!host) return;
+    host.innerHTML = cells.map(([n, item, f], i) => `<div class="cell"><p class="cap"><span>${n}</span><i>0${i + 1}</i></p><div class="panel">${listHTML([item], { demo: true, force: f, open: /Expanded/.test(n) })}</div></div>`).join('');
+    host.querySelectorAll('.row').forEach(r => { r.removeAttribute('data-demo'); r.tabIndex = -1; r.setAttribute('aria-hidden', 'true'); });
+  }
+  const LEFT = { i: 'Icon', a: 'Avatar', t: 'Thumbnail' };
+  function fillSystem() {
+    const host = document.getElementById('sys');
+    host.innerHTML = SET.system.map(it => {
+      const trail = it.meta && it.ri ? 'Text + icon' : it.meta ? 'Text' : it.ri ? 'Icon' : 'None';
+      return `<div class="cell"><p class="cap"><span>${it.left ? LEFT[it.left[0]] : 'No leading'} · ${it.sub ? '2 lines' : '1 line'}</span><i>${trail}</i></p><div class="panel sys-p">${listHTML([it], { demo: true })}</div></div>`;
+    }).join('');
+  }
+  function fillStudy() {
+    const host = document.getElementById('study'); if (!host) return;
+    host.innerHTML = SET.study.map(([n, d, items], i) => `<div class="cell"><p class="cap"><span>${esc(n)}</span><i>0${i + 1}</i></p><div class="panel study-p">${listHTML(items, { demo: true })}</div><p class="note">${esc(d)}</p></div>`).join('');
+  }
+  function fillAnatomy() {
+    const host = document.getElementById('anas');
+    host.innerHTML = SET.anatomy.map(([cap, it, dk]) => `<div class="cell"><p class="cap"><span>${esc(cap)}</span><i>px</i></p><div class="ana-box${dk ? ' desk' : ''}"><div class="ana-in">${listHTML([it], { still: true })}</div><div class="marks"></div></div></div>`).join('');
+  }
+  function annotate(box) {
+    const mk = box.querySelector('.marks'); mk.innerHTML = '';
+    const row = box.querySelector('.row'); if (!row) return;
+    const B = box.getBoundingClientRect(), sl = box.scrollLeft;
+    mk.style.width = box.scrollWidth + 'px';
+    const R = el => { const r = el.getBoundingClientRect(); return { l: r.left - B.left + sl, t: r.top - B.top, r: r.right - B.left + sl, b: r.bottom - B.top, w: r.width, h: r.height }; };
+    const rr = R(row), body = R(row.querySelector('.body'));
+    const le = row.querySelector('.lead'), tr = row.querySelector('.trail'), ti = row.querySelector('.ti');
+    const L = le && R(le), T = tr && R(tr), TI = ti && R(ti);
+    const n = v => Math.round(v);
+    const el = (cls, x, y, w, h, label) => {
+      const d = document.createElement('div'); d.className = cls;
+      d.style.left = x + 'px'; d.style.top = y + 'px';
+      if (w != null) d.style.width = Math.max(0, w) + 'px';
+      if (h != null) d.style.height = Math.max(0, h) + 'px';
+      if (label != null) d.innerHTML = `<b>${label}</b>`;
+      mk.appendChild(d);
+    };
+    const x0 = L ? L.l : body.l, x1 = T ? T.r : body.r;
+    el('band', rr.l, rr.t, x0 - rr.l, rr.h);
+    if (L) el('band', L.r, rr.t, body.l - L.r, rr.h);
+    if (T) el('band', body.r, rr.t, T.l - body.r, rr.h);
+    el('band', x1, rr.t, rr.r - x1, rr.h);
+    el('band', x0, rr.t, x1 - x0, body.t - rr.t);
+    el('band', x0, body.b, x1 - x0, rr.b - body.b);
+    const y = rr.t - 18;
+    el('mk h', rr.l, y, x0 - rr.l, null, n(x0 - rr.l));
+    if (L) el('mk h', L.r, y, body.l - L.r, null, n(body.l - L.r));
+    if (T) el('mk h', body.r, y, T.l - body.r, null, n(T.l - body.r));
+    el('mk h', x1, y, rr.r - x1, null, n(rr.r - x1));
+    el('mk v', rr.l - 16, rr.t, null, body.t - rr.t, n(body.t - rr.t));
+    el('mk v', rr.l - 16, body.b, null, rr.b - body.b, n(rr.b - body.b));
+    if (L) el('mk v', rr.l - 48, L.t, null, L.h, n(L.w) === n(L.h) ? n(L.h) : n(L.w) + '×' + n(L.h));
+    el('mk v right', rr.r + 14, rr.t, null, rr.h, 'H ' + n(rr.h));
+    if (TI) el('mk h below', TI.l, rr.b + 12, TI.w, null, n(TI.w));
+  }
+  const annotateAll = () => document.querySelectorAll('.ana-box').forEach(annotate);
+
+  /* ---------- boot ---------- */
+  window.LIST = { icon, emit, P, S, reduce, esc, navs };
+  fillStates('dstates', [['Enabled', SET.stateItem, ''], ['Hover', SET.stateItem, 's-hover'], ['Pressed', SET.stateItem, 's-press'], ['Expanded', SET.expandItem, '']]);
+  fillStates('states', [['Enabled', SET.stateItem, ''], ['Pressed · touch', SET.stateItem, 's-touch' + (SET.touchPress ? ' s-press' : '')], ['Expanded', SET.expandItem, '']]);
+  fillStudy(); fillSystem(); fillAnatomy();
+  H().init && H().init();
+  annotateAll();
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => requestAnimationFrame(annotateAll));
+  let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(annotateAll, 120); });
+  document.querySelectorAll('.ana-box').forEach(b => b.addEventListener('scroll', () => annotate(b), { passive: true }));
+  const sb = document.getElementById('slow');
+  sb.addEventListener('click', () => { S.k = S.k === 1 ? 4 : 1; root.style.setProperty('--k', S.k); sb.setAttribute('aria-pressed', S.k !== 1); });
+})();
+
+</script>
