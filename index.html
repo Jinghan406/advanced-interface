@@ -108,6 +108,12 @@ button.cover { padding: 0; cursor: pointer; width: 100%; font: inherit; color: i
 /* To add a week: put a new entry at the top of WEEKS, its pages under p/ and its covers under covers/. */
 const FIG = 'https://www.figma.com/design/i4NyKNmLDgHOhEJ0ypeuO6/week1-Progress-Bar?node-id=';
 const WEEKS = [
+  { id: 'w5', n: 'Week 5', title: 'Lists', page: '274-2',
+    brief: 'Two sets of a list system: leading icon, avatar or thumbnail, one or two lines, trailing text or icon; one row navigates deeper, one expands; enabled, hover and pressed, with full spec.',
+    sets: [
+      { id: 'w5-lava', name: 'Lava', tone: 'Minimal', fig: '276-2', note: 'Wax seeps into the hovered row; the title carries up into the next level.' },
+      { id: 'w5-telemetry', name: 'Telemetry', tone: 'Futuristic', fig: '296-2', note: 'Station console: signal-red brackets lock on, values re-resolve, levels wipe in.' }
+    ] },
   { id: 'w4', n: 'Week 4', title: 'Sliders', page: '248-2',
     brief: 'Three sets of a stepped and a continuous slider, each with hover, pressed and drag states, the value always readable, and full spec.',
     sets: [
